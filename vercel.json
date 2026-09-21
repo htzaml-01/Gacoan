@@ -1,5 +1,14 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "trailingSlash": false
+  "rewrites": [
+    {
+      "source": "/api/create-midtrans-token",
+      "destination": "/api/create-midtrans-token.js"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/health.js"
+    }
+  ]
 }

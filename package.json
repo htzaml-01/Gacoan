@@ -1,0 +1,12 @@
+{
+  "name": "gacoan-pos-system",
+  "version": "1.0.0",
+  "description": "Mie Gacoan POS & Online Ordering System with Midtrans Payment Gateway",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["mie-gacoan", "pos", "midtrans"],
+  "author": "",
+  "license": "ISC"
+}

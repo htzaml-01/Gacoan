@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Kasir POS - Mie Gacoan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="kasir.css" />
+</head>
+<body>
+
+  <!-- Kasir Login Screen (Overlay bypassed) -->
+  <div class="kasir-login-overlay" id="kasirLoginOverlay" style="display: none;">
+    <div class="kasir-login-card">
+      <div class="kasir-login-header">
+        <div class="kasir-logo-box">
+          <img src="asset/logo.png" alt="Mie Gacoan Logo" class="kasir-logo-img" />
+        </div>
+        <h2 class="kasir-login-title">Portal Kasir Mie Gacoan</h2>
+        <p class="kasir-login-desc">Silakan login sebagai petugas kasir untuk memproses dan mengonfirmasi pesanan pelanggan.</p>
+      </div>
+
+      <form id="kasirLoginForm" class="kasir-login-form">
+        <div class="kasir-form-group">
+          <label for="kasirUsername" class="kasir-label">Username Kasir</label>
+          <input type="text" id="kasirUsername" class="kasir-input" placeholder="Masukkan usn (kasir)" required autocomplete="username" />
+        </div>
+        <div class="kasir-form-group">
+          <label for="kasirPassword" class="kasir-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="kasirPassword" class="kasir-input" placeholder="Masukkan password (kasir123)" required autocomplete="current-password" />
+            <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
+              <svg class="icon-eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-closed" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="kasir-msg" id="kasirLoginMsg"></div>
+        <button type="submit" class="btn-kasir-primary">Buka Dashboard Kasir</button>
+        <div class="kasir-demo-note">
+          <small>Username: <strong>kasir</strong> &nbsp;|&nbsp; Password: <strong>kasir123</strong></small>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cashier POS Dashboard View -->
+  <div class="kasir-dashboard" id="kasirDashboard">
+
+    <!-- Top POS Navbar -->
+    <header class="kasir-navbar">
+      <div class="navbar-left">
+        <div class="kasir-nav-logo">
+          <img src="asset/logo.png" alt="Mie Gacoan" />
+        </div>
+        <div class="kasir-nav-title">
+          <h1>MIE GACOAN &bull; PORTAL KASIR</h1>
+          <span class="live-clock" id="liveClock">00:00:00 WIB</span>
+        </div>
+      </div>
+
+      <div class="navbar-right">
+        <button type="button" class="btn-kasir-logout" id="btnKasirLogout" title="Logout Kasir">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Keluar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main POS Body -->
+    <main class="kasir-main-content">
+
+      <!-- View Switcher (Orders vs Tables vs Reservations vs Products Catalog) -->
+      <div class="kasir-view-switcher">
+        <button type="button" class="view-tab-btn active" id="tabBtnOrders">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Antrian & Transaksi</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tabBtnTables">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+            <line x1="9" y1="4" x2="9" y2="20"></line>
+            <line x1="15" y1="4" x2="15" y2="20"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+          </svg>
+          <span>Denah Meja (Live)</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tabBtnReservations">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Jadwal Reservasi</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tabBtnProducts">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span>Katalog Menu</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="tabBtnSales">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Data Penjualan</span>
+        </button>
+      </div>
+
+      <!-- SECTION 1: ORDERS MANAGEMENT (DEFAULT) -->
+      <div id="ordersViewContainer">
+
+      <!-- Statistics KPI Summary Cards -->
+      <section class="kasir-stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background-color: #eff6ff; color: #0066ff;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-title">Total Pesanan Hari Ini</span>
+            <h3 class="stat-number" id="statTotalOrders">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background-color: #fef3c7; color: #d97706;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-title">Menunggu Bayar</span>
+            <h3 class="stat-number" id="statPendingOrders">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background-color: #dcfce7; color: #16a34a;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-title">Sudah Lunas</span>
+            <h3 class="stat-number" id="statPaidOrders">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background-color: #f3e8ff; color: #7c3aed;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-title">Total Omset Hari Ini</span>
+            <h3 class="stat-number" id="statTotalRevenue">Rp 0</h3>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Search / Queue & QR Input Bar -->
+      <section class="kasir-search-panel">
+        <div class="search-panel-title">
+          <h3>Pencarian Cepat & Scan Pesanan</h3>
+          <p>Cari pesanan pelanggan dengan memasukkan <strong>Nomor Antrian</strong> atau <strong>Scan/Paste QR Code</strong>.</p>
+        </div>
+
+        <div class="search-form-row">
+          <div class="search-input-field">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="queueSearchInput" placeholder="Ketik No. Antrian (misal: A-001) atau tempel isi QR..." />
+            <button type="button" id="btnClearSearch" class="btn-clear-search">&times;</button>
+          </div>
+
+          <button type="button" class="btn-qr-scan" id="btnScanQrCode">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+              <rect x="7" y="7" width="3" height="3"></rect>
+              <rect x="14" y="7" width="3" height="3"></rect>
+              <rect x="7" y="14" width="3" height="3"></rect>
+              <rect x="14" y="14" width="3" height="3"></rect>
+            </svg>
+            <span>Scan QR Barcode</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Orders Feed Section -->
+      <section class="kasir-orders-section">
+        <div class="orders-section-header">
+          <div class="filter-tabs">
+            <button type="button" class="filter-btn active" data-filter="ALL">Semua Pesanan</button>
+            <button type="button" class="filter-btn" data-filter="MENUNGGU_BAYAR">Menunggu Bayar (<span id="countPendingFilter">0</span>)</button>
+            <button type="button" class="filter-btn" data-filter="LUNAS">Sudah Lunas (<span id="countPaidFilter">0</span>)</button>
+            <button type="button" class="filter-btn" data-filter="SELESAI">Selesai (<span id="countDoneFilter">0</span>)</button>
+          </div>
+
+          <div class="orders-actions-right">
+            <button type="button" class="btn-refresh-feed" id="btnRefreshFeed" title="Segarkan Data">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Orders Grid / Cards Container -->
+        <div class="orders-grid" id="ordersGrid">
+          <!-- Dynamic Order Cards Generated by kasir.js -->
+        </div>
+      </section>
+      </div> <!-- End of ordersViewContainer -->
+
+      <!-- SECTION 2: LIVE TABLE MAP (DENAH MEJA REALTIME) -->
+      <section class="kasir-tables-section" id="tablesViewContainer" style="display: none;">
+        <div class="tables-header-panel">
+          <div class="tables-header-info">
+            <h2>Denah & Status Meja Resto (Real-Time)</h2>
+            <p>Pantau okupansi meja (Meja 01 s/d Meja 12) secara live, durasi makan tamu, dan status reservasi.</p>
+          </div>
+          <div class="tables-legend">
+            <span class="legend-item"><span class="legend-dot green"></span> Kosong / Tersedia</span>
+            <span class="legend-item"><span class="legend-dot red"></span> Sedang Terisi (Makan)</span>
+            <span class="legend-item"><span class="legend-dot yellow"></span> Dibooking (Reservasi)</span>
+          </div>
+        </div>
+
+        <div class="kasir-tables-grid" id="kasirLiveTablesGrid">
+          <!-- Rendered dynamically by kasir.js -->
+        </div>
+      </section>
+
+      <!-- SECTION 3: RESERVATIONS MANAGEMENT VIEW -->
+      <section class="kasir-reservations-section" id="reservationsViewContainer" style="display: none;">
+        <div class="rsv-kasir-header">
+          <div class="rsv-kasir-info">
+            <h2>Daftar Reservasi & Booking Acara</h2>
+            <p>Kelola jadwal booking acara, verifikasi pembayaran DP 50%, Check-In tamu tiba, dan pelunasan tagihan.</p>
+          </div>
+          <button type="button" class="btn-kasir-primary" id="btnKasirNewRsv">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+ Buat Reservasi Baru</span>
+          </button>
+        </div>
+
+        <div class="rsv-kasir-filters">
+          <button type="button" class="rsv-filter-pill active" data-rsv-filter="ALL">Semua Reservasi</button>
+          <button type="button" class="rsv-filter-pill" data-rsv-filter="UPCOMING">Mendatang / DP Lunas</button>
+          <button type="button" class="rsv-filter-pill" data-rsv-filter="SETTLED">Lunas / Selesai</button>
+        </div>
+
+        <div class="rsv-cards-container" id="kasirReservationsList">
+          <!-- Rendered dynamically by kasir.js -->
+        </div>
+      </section>
+
+      <!-- SECTION 4: PRODUCTS & MENU CATALOG VIEW -->
+      <section class="kasir-products-section" id="productsCatalogSection" style="display: none;">
+        <div class="catalog-header-panel">
+          <div class="catalog-header-info">
+            <h2>Katalog Menu & Produk Mie Gacoan</h2>
+            <p>Daftar seluruh menu yang dijual di outlet beserta foto, kategori, varian level, dan harga resmi.</p>
+          </div>
+          <div class="catalog-actions-bar">
+            <div class="catalog-search-box">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="catalogSearchInput" placeholder="Cari nama menu atau kategori..." />
+            </div>
+            <div class="catalog-category-pills">
+              <button type="button" class="cat-pill active" data-cat="ALL">Semua Menu</button>
+              <button type="button" class="cat-pill" data-cat="MIE">MIE</button>
+              <button type="button" class="cat-pill" data-cat="DIMSUM">DIMSUM</button>
+              <button type="button" class="cat-pill" data-cat="BEVERAGE">BEVERAGE</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="catalog-products-grid" id="catalogProductsGrid">
+          <!-- Populated by kasir.js -->
+        </div>
+      </section>
+
+      <!-- SECTION 5: DATA PENJUALAN & LAPORAN OMSET (HARIAN, BULANAN, TAHUNAN) -->
+      <section class="kasir-sales-section" id="salesReportViewContainer" style="display: none;">
+        <!-- Header & Filter Controls -->
+        <div class="sales-report-header">
+          <div class="sales-report-info">
+            <h2>Data & Laporan Omset Penjualan</h2>
+            <p>Pantau rincian omset, menu terlaris, dan histori transaksi berdasarkan periode harian, bulanan, atau tahunan.</p>
+          </div>
+          
+          <div class="sales-report-controls">
+            <!-- Period Selector Tabs -->
+            <div class="sales-period-pills">
+              <button type="button" class="sales-pill-btn active" data-period="DAILY" id="btnPeriodDaily">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Harian</span>
+              </button>
+              <button type="button" class="sales-pill-btn" data-period="MONTHLY" id="btnPeriodMonthly">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span>Bulanan</span>
+              </button>
+              <button type="button" class="sales-pill-btn" data-period="YEARLY" id="btnPeriodYearly">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 14 14"></polyline>
+                </svg>
+                <span>Tahunan</span>
+              </button>
+            </div>
+
+            <!-- Dynamic Date / Month / Year Picker -->
+            <div class="sales-date-picker-wrap">
+              <input type="date" id="salesInputDaily" class="sales-date-input" title="Pilih Tanggal Penjualan" />
+              <input type="month" id="salesInputMonthly" class="sales-date-input" style="display: none;" title="Pilih Bulan Penjualan" />
+              <select id="salesSelectYearly" class="sales-date-input" style="display: none;" title="Pilih Tahun Penjualan">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="sales-header-actions">
+              <button type="button" class="btn-sales-action" id="btnResetSalesPeriod" title="Pilih Hari/Bulan/Tahun Sekarang">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span>Periode Ini</span>
+              </button>
+              <button type="button" class="btn-sales-action primary" id="btnExportSalesCSV" title="Unduh File CSV Laporan">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales KPI Cards -->
+        <div class="sales-kpi-grid">
+          <div class="sales-kpi-card revenue-card">
+            <div class="sales-kpi-top">
+              <span class="sales-kpi-label">Total Omset Penjualan</span>
+              <span class="sales-kpi-badge" id="salesPeriodBadgeLabel">Harian</span>
+            </div>
+            <h3 class="sales-kpi-val" id="salesTotalRevenue">Rp 0</h3>
+            <span class="sales-kpi-sub" id="salesPeriodDateText">Hari Ini</span>
+          </div>
+
+          <div class="sales-kpi-card">
+            <div class="sales-kpi-top">
+              <span class="sales-kpi-label">Transaksi Lunas</span>
+              <div class="sales-kpi-icon green">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <h3 class="sales-kpi-val" id="salesTotalOrdersCount">0</h3>
+            <span class="sales-kpi-sub">Transaksi Sukses</span>
+          </div>
+
+          <div class="sales-kpi-card">
+            <div class="sales-kpi-top">
+              <span class="sales-kpi-label">Rata-rata / Transaksi (AOV)</span>
+              <div class="sales-kpi-icon purple">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <h3 class="sales-kpi-val" id="salesAvgPerOrder">Rp 0</h3>
+            <span class="sales-kpi-sub">Nilai Keranjang Rata-rata</span>
+          </div>
+
+          <div class="sales-kpi-card">
+            <div class="sales-kpi-top">
+              <span class="sales-kpi-label">Total Porsi Terjual</span>
+              <div class="sales-kpi-icon orange">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                </svg>
+              </div>
+            </div>
+            <h3 class="sales-kpi-val" id="salesTotalItemsSold">0</h3>
+            <span class="sales-kpi-sub">Porsi / Menu Terjual</span>
+          </div>
+        </div>
+
+        <!-- Sales Analytics Breakdown: 2 Columns (Top Seller vs Transaction History) -->
+        <div class="sales-details-grid">
+          <!-- Top Menu Terlaris -->
+          <div class="sales-box top-sellers-box">
+            <div class="sales-box-header">
+              <div class="sales-box-title">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e11d48" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <h4>Menu Terlaris (Best Seller)</h4>
+              </div>
+              <span class="sales-box-badge">Paling Diminati</span>
+            </div>
+            <div class="top-sellers-list" id="salesTopSellersList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Riwayat Transaksi Rekap -->
+          <div class="sales-box transactions-history-box">
+            <div class="sales-box-header">
+              <div class="sales-box-title">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0066ff" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <h4>Histori Transaksi Periode Ini</h4>
+              </div>
+              <div class="sales-search-mini">
+                <input type="text" id="salesHistorySearch" placeholder="Cari nama, meja, antrian..." />
+              </div>
+            </div>
+            <div class="sales-table-responsive">
+              <table class="sales-table">
+                <thead>
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Antrian / ID</th>
+                    <th>Pelanggan</th>
+                    <th>Metode</th>
+                    <th>Menu Dipesan</th>
+                    <th>Total Omset</th>
+                    <th style="text-align: center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="salesTransactionsTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- QR Scanner Modal Simulator / WebCam -->
+  <div class="modal-overlay" id="qrScannerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Scan QR Code Antrian Pembeli</h3>
+        <button type="button" class="modal-close" id="closeScannerModal">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div class="scanner-camera-box">
+          <div class="scanner-laser-line"></div>
+          <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#0066ff" stroke-width="1.5">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+            <path d="M9 9h6v6H9z"></path>
+          </svg>
+          <p style="font-size: 13px; color: #6b7280; margin-top: 10px;">Arahkan kamera atau tempel kode QR di bawah:</p>
+        </div>
+
+        <div class="quick-qr-paste-box">
+          <input type="text" id="manualQrInput" class="kasir-input" placeholder="Tempel / ketik ID Pesanan (misal: A-001)" />
+          <button type="button" class="btn-kasir-primary" id="btnSubmitManualQr">Konfirmasi Temukan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Input Pembayaran Tunai (Cash Payment & Change Calculator) -->
+  <div class="modal-overlay" id="cashPaymentModal">
+    <div class="modal-card cash-payment-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Terima Pembayaran Tunai (Cash)</h3>
+        <button type="button" class="modal-close" id="closeCashPaymentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="cash-order-summary">
+          <div class="cash-summary-row">
+            <span>No. Antrian:</span>
+            <strong id="cashQueueNo" class="cash-queue-badge">#A-001</strong>
+          </div>
+          <div class="cash-summary-row">
+            <span>Nama Pelanggan:</span>
+            <strong id="cashCustomerName">-</strong>
+          </div>
+          <div class="cash-summary-row total-row">
+            <span>Total Tagihan:</span>
+            <span id="cashTotalBill" class="cash-total-amount">Rp 0</span>
+          </div>
+        </div>
+
+        <div class="cash-input-group">
+          <label for="cashGivenInput" class="cash-input-label">Uang Tunai Diterima (Rp):</label>
+          <div class="cash-input-wrap">
+            <span class="currency-prefix">Rp</span>
+            <input type="number" id="cashGivenInput" class="cash-number-input" placeholder="Masukkan jumlah uang" min="0" step="1000" />
+          </div>
+
+          <!-- Quick Cash Amount Shortcuts -->
+          <div class="quick-cash-pills" id="quickCashPills">
+            <!-- Dynamically populated with Uang Pas, 20k, 50k, 100k, etc -->
+          </div>
+        </div>
+
+        <div class="cash-change-box" id="cashChangeBox">
+          <div class="change-label">Kembalian:</div>
+          <div class="change-amount" id="cashChangeAmount">Rp 0</div>
+          <div class="change-status-msg" id="cashChangeStatusMsg"></div>
+        </div>
+
+        <div class="cash-modal-actions">
+          <button type="button" class="btn-kasir-cancel" id="btnCancelCashPayment">Batal</button>
+          <button type="button" class="btn-kasir-primary" id="btnSubmitCashPayment" disabled>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Konfirmasi Bayar & Cetak Resi</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Receipt Modal -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-card receipt-card">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+        <h3 class="modal-title" style="font-size: 15px; font-weight: 700;">Struk Pembayaran</h3>
+        <button type="button" class="modal-close" id="btnCloseReceipt">&times;</button>
+      </div>
+
+      <div class="receipt-body" id="receiptContent">
+        <div class="receipt-header">
+          <h2>MIE GACOAN</h2>
+          <p>Official Store &bull; Bukti Transaksi Resmi</p>
+          <div class="receipt-divider"></div>
+        </div>
+        <!-- Generated by kasir.js -->
+      </div>
+
+      <div style="padding: 12px 16px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <button type="button" class="btn-kasir-primary" onclick="window.print()" style="width: 100%; padding: 10px;">
+          Cetak Struk
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal Settle Pelunasan Sisa Reservasi -->
+  <div class="modal-overlay" id="modalReservationSettle">
+    <div class="modal-card cash-payment-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Pelunasan Tagihan Reservasi</h3>
+        <button type="button" class="modal-close" id="closeRsvSettleModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="cash-order-summary">
+          <div class="cash-summary-row">
+            <span>Kode Reservasi:</span>
+            <strong id="settleRsvId" class="cash-queue-badge">RSV-0000</strong>
+          </div>
+          <div class="cash-summary-row">
+            <span>Nama Acara / Pemesan:</span>
+            <strong id="settleCustomerName">-</strong>
+          </div>
+          <div class="cash-summary-row">
+            <span>Meja Dipesan:</span>
+            <strong id="settleTablesText" style="color: #0066ff;">-</strong>
+          </div>
+          <div class="cash-summary-row">
+            <span>Total Tagihan Awal:</span>
+            <span id="settleGrandTotal" style="font-weight: 700;">Rp 0</span>
+          </div>
+          <div class="cash-summary-row" style="color: #16a34a;">
+            <span>DP Sudah Terbayar (50%):</span>
+            <strong id="settleDpPaid">Rp 0</strong>
+          </div>
+          <div class="cash-summary-row total-row" style="border-top: 2px dashed #e5e7eb; padding-top: 8px;">
+            <span>Sisa Wajib Dilunasi:</span>
+            <span id="settleRemainingBalance" class="cash-total-amount" style="color: #dc2626;">Rp 0</span>
+          </div>
+        </div>
+
+        <div class="auth-group" style="margin: 14px 0;">
+          <label class="cash-input-label">Metode Pelunasan:</label>
+          <div style="display: flex; gap: 10px; margin-top: 6px;">
+            <label class="dining-radio" style="flex: 1; padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <input type="radio" name="settleMethod" value="Cash" checked />
+              <strong style="font-size: 13px;">Uang Tunai (Cash)</strong>
+            </label>
+            <label class="dining-radio" style="flex: 1; padding: 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <input type="radio" name="settleMethod" value="Cashless (QRIS)" />
+              <strong style="font-size: 13px;">Cashless (QRIS)</strong>
+            </label>
+          </div>
+        </div>
+
+        <div class="cash-input-group" id="settleCashInputGroup">
+          <label for="settleCashGiven" class="cash-input-label">Uang Tunai Diterima (Rp):</label>
+          <div class="cash-input-wrap">
+            <span class="currency-prefix">Rp</span>
+            <input type="number" id="settleCashGiven" class="cash-number-input" placeholder="Masukkan nominal uang" min="0" step="1000" />
+          </div>
+          <div class="quick-cash-pills" id="settleQuickCashPills"></div>
+        </div>
+
+        <div class="cash-change-box" id="settleChangeBox">
+          <div class="change-label">Kembalian:</div>
+          <div class="change-amount" id="settleChangeAmount">Rp 0</div>
+          <div class="change-status-msg" id="settleChangeStatusMsg"></div>
+        </div>
+
+        <div class="cash-modal-actions">
+          <button type="button" class="btn-kasir-cancel" id="btnCancelRsvSettle">Batal</button>
+          <button type="button" class="btn-kasir-primary" id="btnConfirmRsvSettle" disabled>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Konfirmasi Lunas & Cetak Struk</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Buat Reservasi Baru di Kasir -->
+  <div class="modal-overlay" id="modalKasirNewReservation">
+    <div class="modal-card modal-reservation-card">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <h3 class="modal-title">Input Reservasi Acara Baru (Kasir)</h3>
+          <p class="modal-subtitle">Min. belanja Rp15.000/kursi • DP Minimal 50% (Bisa Cash / Cashless)</p>
+        </div>
+        <button type="button" class="modal-close" id="closeKasirNewRsv">&times;</button>
+      </div>
+      <div class="modal-body modal-reservation-body">
+        <form id="kasirRsvForm">
+          <!-- Step 1: Info Pemesan -->
+          <div class="rsv-section">
+            <h4 class="rsv-section-title">1. Data Pemesan / Acara</h4>
+            <div class="rsv-grid-2">
+              <div class="auth-group">
+                <label for="kRsvCustomerName" class="auth-label">Nama Pemesan / Acara *</label>
+                <input type="text" id="kRsvCustomerName" class="auth-input" placeholder="contoh: Gathering Kantor BNI" required />
+              </div>
+              <div class="auth-group">
+                <label for="kRsvPhone" class="auth-label">Nomor WhatsApp / Telp *</label>
+                <input type="tel" id="kRsvPhone" class="auth-input" placeholder="contoh: 08123456789" required />
+              </div>
+            </div>
+            <div class="rsv-grid-2">
+              <div class="auth-group">
+                <label for="kRsvDate" class="auth-label">Tanggal Reservasi *</label>
+                <input type="date" id="kRsvDate" class="auth-input" required />
+              </div>
+              <div class="auth-group">
+                <label for="kRsvTime" class="auth-label">Jam Kedatangan *</label>
+                <input type="time" id="kRsvTime" class="auth-input" min="09:00" max="21:30" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Pilih Meja & Kursi -->
+          <div class="rsv-section">
+            <div class="rsv-section-header">
+              <h4 class="rsv-section-title">2. Pilih Meja & Kursi (Maks. 5 Kursi / Meja)</h4>
+              <span class="rsv-badge-hint">Bisa pilih > 1 meja</span>
+            </div>
+            <div class="rsv-tables-grid" id="kRsvTablesGrid"></div>
+            <div class="rsv-table-summary-bar">
+              Meja Dipilih: <strong id="kRsvSelectedTablesText" style="color: #0066ff;">Meja 01</strong>
+              <span id="kRsvMaxCapacityText" style="font-size: 12px; color: #6b7280;">(Kapasitas Maks: 5 Kursi)</span>
+            </div>
+            <div class="auth-group" style="margin-top: 14px;">
+              <label for="kRsvSeatsCount" class="auth-label">Jumlah Kursi Tamu *</label>
+              <div class="rsv-seat-stepper">
+                <button type="button" class="btn-seat-step" id="kBtnSeatMinus">&minus;</button>
+                <input type="number" id="kRsvSeatsCount" class="auth-input rsv-seat-input" min="1" max="60" value="4" required />
+                <button type="button" class="btn-seat-step" id="kBtnSeatPlus">&plus;</button>
+                <span class="seat-unit-label">Kursi Tamu</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Pilih Menu & Minimum Spend -->
+          <div class="rsv-section">
+            <div class="rsv-spend-target-card">
+              <div class="spend-target-top">
+                <div>
+                  <span class="spend-target-title">Syarat Minimal Belanja:</span>
+                  <div class="spend-target-calc"><span id="kRsvSeatMultiplier">4</span> kursi &times; Rp15.000 = <strong id="kRsvMinSpendAmount">Rp60.000</strong></div>
+                </div>
+                <div class="spend-status-box">
+                  <span class="spend-status-label">Total Menu Dipilih</span>
+                  <span class="spend-status-value" id="kRsvCurrentMenuTotal">Rp0</span>
+                </div>
+              </div>
+              <div class="spend-alert-msg" id="kSpendAlertMsg">Silakan pilih menu minimal senilai Rp60.000</div>
+            </div>
+
+            <h4 class="rsv-section-title" style="margin-top: 14px;">3. Pilih Menu Acara</h4>
+            <div class="rsv-menu-list" id="kRsvMenuList"></div>
+          </div>
+
+          <!-- Step 4: Opsi DP & Metode Pembayaran Kasir -->
+          <div class="rsv-section">
+            <h4 class="rsv-section-title">4. Ketentuan Pembayaran DP</h4>
+            <div class="rsv-dp-options">
+              <label class="rsv-dp-card active" id="kDpOption50Label">
+                <input type="radio" name="kRsvDpOption" value="50" checked />
+                <div class="dp-card-inner">
+                  <div class="dp-badge">DP 50%</div>
+                  <div class="dp-amount" id="kRsvDp50Amount">Rp0</div>
+                  <div class="dp-sub">Sisa <span id="kRsvDp50Remain">Rp0</span> di hari-H</div>
+                </div>
+              </label>
+              <label class="rsv-dp-card" id="kDpOption100Label">
+                <input type="radio" name="kRsvDpOption" value="100" />
+                <div class="dp-card-inner">
+                  <div class="dp-badge dp-badge-full">Lunas 100%</div>
+                  <div class="dp-amount" id="kRsvDp100Amount">Rp0</div>
+                  <div class="dp-sub">Langsung Lunas</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="auth-group" style="margin-top: 10px;">
+              <label class="cash-input-label">Metode Pembayaran DP di Kasir:</label>
+              <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <label class="dining-radio" style="flex: 1; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="radio" name="kRsvPayMethod" value="Cash (Kasir)" checked />
+                  <span>Tunai (Cash)</span>
+                </label>
+                <label class="dining-radio" style="flex: 1; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="radio" name="kRsvPayMethod" value="Cashless (QRIS)" />
+                  <span>Cashless (QRIS)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="rsv-footer-submit">
+            <div class="rsv-total-payable">
+              <span class="rsv-payable-label">Total DP Diterima Kasir:</span>
+              <span class="rsv-payable-value" id="kRsvPayableNow">Rp0</span>
+            </div>
+            <button type="submit" class="btn-kasir-primary rsv-submit-btn" id="btnSubmitKasirRsv">Simpan Reservasi & Cetak Bukti DP</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Cloud Database & Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="kasir.js"></script>
+</body>
+</html>

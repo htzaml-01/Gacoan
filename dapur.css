@@ -1,0 +1,702 @@
+/* Global Reset & Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #0066ff;
+  --primary-hover: #0052cc;
+  --primary-active: #0040a8;
+  --orange-kds: #ea580c;
+  --orange-bg: #ffedd5;
+  --blue-kds: #0284c7;
+  --blue-bg: #e0f2fe;
+  --green-kds: #16a34a;
+  --green-bg: #dcfce7;
+  --bg-kds: #f1f5f9;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-kds);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   DAPUR LOGIN SCREEN
+   ========================================================================== */
+.dapur-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.dapur-login-overlay.hidden {
+  display: none !important;
+}
+
+.dapur-login-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+}
+
+.dapur-login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dapur-logo-box-lg {
+  width: 68px;
+  height: 68px;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.dapur-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dapur-login-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.dapur-login-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.dapur-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dapur-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dapur-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.dapur-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #f8fafc;
+  outline: none;
+}
+
+.dapur-input:focus {
+  border-color: var(--primary-color);
+  background: #ffffff;
+}
+
+/* Password Toggle Wrapper */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper .dapur-input {
+  width: 100%;
+  padding-right: 44px !important;
+}
+
+.btn-toggle-pw {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  z-index: 2;
+}
+
+.btn-toggle-pw:hover {
+  color: #1e293b;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-toggle-pw:focus {
+  outline: none;
+  color: var(--primary-color);
+}
+
+.btn-dapur-primary {
+  background-color: var(--orange-kds);
+  color: #ffffff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-dapur-primary:hover {
+  background-color: #c2410c;
+}
+
+.dapur-msg {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 0;
+  display: none;
+}
+
+.dapur-msg.error {
+  display: block;
+  color: #ef4444;
+}
+
+.dapur-msg.success {
+  display: block;
+  color: #22c55e;
+}
+
+.dapur-demo-note {
+  text-align: center;
+  padding-top: 4px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   TOP KITCHEN NAVBAR
+   ========================================================================== */
+.dapur-navbar {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dapur-logo-box {
+  width: 44px;
+  height: 44px;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dapur-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dapur-nav-title h1 {
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #f8fafc;
+}
+
+.live-clock {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: block;
+  margin-top: 1px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kds-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e293b;
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+}
+
+.btn-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e293b;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #334155;
+  transition: all 0.15s;
+}
+
+.btn-nav-link:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   MAIN KITCHEN CONTAINER & CONTROL BAR
+   ========================================================================== */
+.dapur-main-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px 24px 60px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dapur-control-bar {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dapur-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dapur-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dapur-stat-pill.orange {
+  background: var(--orange-bg);
+  color: var(--orange-kds);
+  border: 1px solid #fed7aa;
+}
+
+.dapur-stat-pill.blue {
+  background: var(--blue-bg);
+  color: var(--blue-kds);
+  border: 1px solid #bae6fd;
+}
+
+.dapur-stat-pill.green {
+  background: var(--green-bg);
+  color: var(--green-kds);
+  border: 1px solid #bbf7d0;
+}
+
+.dapur-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dapur-tabs {
+  display: flex;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  gap: 3px;
+}
+
+.dapur-tab {
+  background: none;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dapur-tab:hover {
+  color: var(--text-main);
+}
+
+.dapur-tab.active {
+  background: #ffffff;
+  color: var(--primary-color);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.btn-refresh-kds {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-refresh-kds:hover {
+  background: #f8fafc;
+}
+
+/* ==========================================================================
+   KITCHEN ORDERS GRID & CARD
+   ========================================================================== */
+.dapur-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.kds-empty-state {
+  grid-column: 1 / -1;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-xl);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.kds-empty-state h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 10px;
+}
+
+.kds-empty-state p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.kds-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.kds-card.status-waiting {
+  border-color: #f59e0b;
+}
+
+.kds-card.status-new {
+  border-color: #f97316;
+}
+
+.kds-card.status-cooking {
+  border-color: #0284c7;
+}
+
+.kds-card.status-done {
+  border-color: #22c55e;
+  opacity: 0.85;
+}
+
+.kds-card-header {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #f1f5f9;
+}
+
+.kds-card.status-waiting .kds-card-header {
+  background-color: #fffbeb;
+}
+
+.kds-card.status-new .kds-card-header {
+  background-color: #fff7ed;
+}
+
+.kds-card.status-cooking .kds-card-header {
+  background-color: #f0f9ff;
+}
+
+.kds-card.status-done .kds-card-header {
+  background-color: #f0fdf4;
+}
+
+.kds-queue-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kds-queue-no {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.kds-table-badge {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.kds-status-pill {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.kds-status-pill.waiting {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.kds-status-pill.new {
+  background: var(--orange-bg);
+  color: var(--orange-kds);
+}
+
+.kds-status-pill.cooking {
+  background: var(--blue-bg);
+  color: var(--blue-kds);
+}
+
+.kds-status-pill.done {
+  background: var(--green-bg);
+  color: var(--green-kds);
+}
+
+.kds-card-body {
+  padding: 14px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kds-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.kds-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kds-item-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  border: 1px solid #f1f5f9;
+}
+
+.kds-item-content {
+  flex: 1;
+}
+
+.kds-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kds-item-qty {
+  font-size: 14px;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: var(--text-main);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  margin-right: 6px;
+}
+
+.kds-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.kds-item-level {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+.kds-item-note {
+  font-size: 11.5px;
+  font-style: italic;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.kds-card-footer {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-top: 1.5px solid #f1f5f9;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-kds-cook {
+  flex: 1;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-kds-cook:hover {
+  background: #0369a1;
+}
+
+.btn-kds-done {
+  flex: 1;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-kds-done:hover {
+  background: #15803d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dapur-navbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .navbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .dapur-control-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

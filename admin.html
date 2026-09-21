@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard & Manajemen Menu - Mie Gacoan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- Admin Login Screen (Overlay bypassed) -->
+  <div class="admin-login-overlay" id="adminLoginOverlay" style="display: none;">
+    <div class="admin-login-card">
+      <div class="admin-login-header">
+        <div class="admin-logo-box-lg">
+          <img src="asset/logo.png" alt="Mie Gacoan Logo" class="admin-logo-img" />
+        </div>
+        <h2 class="admin-login-title">Portal Admin Mie Gacoan</h2>
+        <p class="admin-login-desc">Silakan masuk sebagai Administrator untuk mengelola produk, kategori, level, stok, dan memantau total penjualan.</p>
+      </div>
+
+      <form id="adminLoginForm" class="admin-login-form">
+        <div class="admin-form-group">
+          <label for="adminEmail" class="admin-label">Email / Username Admin</label>
+          <input type="text" id="adminEmail" class="admin-input" placeholder="admin@gacaon.id / admin" required autocomplete="username" />
+        </div>
+        <div class="admin-form-group">
+          <label for="adminPassword" class="admin-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="adminPassword" class="admin-input" placeholder="Masukkan password (admin123)" required autocomplete="current-password" />
+            <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
+              <svg class="icon-eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-closed" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="admin-msg" id="adminLoginMsg"></div>
+        <button type="submit" class="btn-admin-primary">Buka Dashboard Admin</button>
+        <div class="admin-demo-note">
+          <small>Email: <strong>admin@gacaon.id</strong> &nbsp;|&nbsp; Password: <strong>admin123</strong></small>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Top Admin Navbar -->
+  <header class="admin-navbar">
+    <div class="navbar-left">
+      <div class="admin-logo-box">
+        <img src="asset/logo.png" alt="Mie Gacoan" />
+      </div>
+      <div class="admin-nav-title">
+        <h1>MIE GACOAN &bull; PORTAL ADMIN</h1>
+        <span class="live-clock" id="liveClock">00:00:00 WIB</span>
+      </div>
+    </div>
+
+    <div class="navbar-right">
+      <button type="button" class="btn-admin-logout" id="btnAdminLogout" title="Logout Admin">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Keluar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Admin Content -->
+  <main class="admin-main-container">
+
+    <!-- Overall Sales Summary KPI Cards -->
+    <section class="admin-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background-color: #eff6ff; color: #0066ff;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Omset Penjualan</span>
+          <h2 class="kpi-value" id="kpiTotalRevenue">Rp 0</h2>
+          <span class="kpi-subtext">Dari semua transaksi lunas</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background-color: #f0fdf4; color: #16a34a;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Transaksi Selesai</span>
+          <h2 class="kpi-value" id="kpiTotalPaidOrders">0</h2>
+          <span class="kpi-subtext" id="kpiPendingOrdersSub">0 pesanan pending</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background-color: #fef3c7; color: #d97706;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Porsi / Menu Terjual</span>
+          <h2 class="kpi-value" id="kpiTotalItemsSold">0</h2>
+          <span class="kpi-subtext">Total item dipesan</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background-color: #f3e8ff; color: #7c3aed;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Menu Aktif</span>
+          <h2 class="kpi-value" id="kpiTotalProducts">0</h2>
+          <span class="kpi-subtext" id="kpiTotalCategoriesSub">3 Kategori</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Admin Navigation Tabs -->
+    <div class="admin-main-tabs">
+      <button type="button" class="admin-tab-btn active" id="tabAdminProducts">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+        </svg>
+        <span>Manajemen Menu</span>
+      </button>
+      <button type="button" class="admin-tab-btn" id="tabAdminCategories">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Kategori Menu</span>
+      </button>
+      <button type="button" class="admin-tab-btn" id="tabAdminReservations">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Riwayat Reservasi</span>
+      </button>
+      <button type="button" class="admin-tab-btn" id="tabAdminSales">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Laporan Penjualan</span>
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         SECTION 1: MANAJEMEN PRODUK & STOK
+         ==================================================================== -->
+    <section class="admin-view-panel active" id="panelAdminProducts">
+      <div class="panel-header-bar">
+        <div class="panel-header-title">
+          <h3>Daftar Produk & Kontrol Stok</h3>
+          <p>Kelola menu, atur ketersediaan stok (Tersedia / Habis), buat varian level pedas dengan custom harga tambahan (+Rp).</p>
+        </div>
+        <div class="panel-header-actions">
+          <div class="admin-search-box">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="productSearchInput" placeholder="Cari menu..." />
+          </div>
+
+          <div class="admin-category-filter" id="productCatFilterGroup">
+            <!-- Dynamic Category Filter Buttons -->
+          </div>
+
+          <button type="button" class="btn-primary-admin" id="btnOpenAddProductModal">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Tambah Produk Baru</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Products Table / Grid -->
+      <div class="admin-products-grid" id="adminProductsGrid">
+        <!-- Populated dynamically by admin.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 2: MANAJEMEN KATEGORI
+         ==================================================================== -->
+    <section class="admin-view-panel" id="panelAdminCategories" style="display: none;">
+      <div class="panel-header-bar">
+        <div class="panel-header-title">
+          <h3>Kategori Menu (MIE, DIMSUM, BEVERAGE, BUNDLING, dll)</h3>
+          <p>Kategori yang ditambahkan akan otomatis muncul di navigasi tab pembeli, kasir, dan menu filter.</p>
+        </div>
+        <button type="button" class="btn-primary-admin" id="btnOpenAddCategoryModal">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Tambah Kategori Baru</span>
+        </button>
+      </div>
+
+      <div class="categories-list-grid" id="categoriesListGrid">
+        <!-- Populated dynamically by admin.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 3: LAPORAN PENJUALAN & RIWAYAT TRANSAKSI
+         ==================================================================== -->
+    <section class="admin-view-panel" id="panelAdminSales" style="display: none;">
+      <div class="panel-header-bar">
+        <div class="panel-header-title">
+          <h3>Riwayat Semua Transaksi Penjualan</h3>
+          <p>Data seluruh pesanan pelanggan yang masuk dari kasir, gateway online, atau dine in/take away.</p>
+        </div>
+        <div class="panel-header-actions">
+          <!-- Filter Period Pills: Harian, Bulanan, Tahunan -->
+          <div class="sales-period-pills">
+            <button type="button" class="sales-pill-btn active" data-period="DAILY" id="adminPeriodDaily">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Harian</span>
+            </button>
+            <button type="button" class="sales-pill-btn" data-period="MONTHLY" id="adminPeriodMonthly">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>Bulanan</span>
+            </button>
+            <button type="button" class="sales-pill-btn" data-period="YEARLY" id="adminPeriodYearly">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+              <span>Tahunan</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Date / Month / Year Picker -->
+          <div class="sales-date-picker-wrap">
+            <input type="date" id="adminSalesInputDaily" class="sales-date-input" title="Pilih Tanggal Penjualan" />
+            <input type="month" id="adminSalesInputMonthly" class="sales-date-input" style="display: none;" title="Pilih Bulan Penjualan" />
+            <select id="adminSalesSelectYearly" class="sales-date-input" style="display: none;" title="Pilih Tahun Penjualan">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <button type="button" class="btn-secondary-admin" id="btnAdminResetSalesPeriod" title="Pilih Hari/Bulan/Tahun Sekarang">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>Periode Ini</span>
+          </button>
+          <button type="button" class="btn-secondary-admin" id="btnExportSalesCsv">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Ekspor CSV</span>
+          </button>
+          <button type="button" class="btn-secondary-admin" id="btnRefreshSales">
+            <span>Refresh Data</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sales KPI Summary Cards for Selected Period -->
+      <div class="sales-kpi-grid">
+        <div class="sales-kpi-card revenue-card">
+          <div class="sales-kpi-top">
+            <span class="sales-kpi-label">Total Omset Penjualan</span>
+            <span class="sales-kpi-badge" id="adminSalesPeriodBadgeLabel">Harian</span>
+          </div>
+          <h3 class="sales-kpi-val" id="adminSalesTotalRevenue">Rp 0</h3>
+          <span class="sales-kpi-sub" id="adminSalesPeriodDateText">Hari Ini</span>
+        </div>
+
+        <div class="sales-kpi-card">
+          <div class="sales-kpi-top">
+            <span class="sales-kpi-label">Transaksi Lunas</span>
+            <div class="sales-kpi-icon green">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <h3 class="sales-kpi-val" id="adminSalesTotalOrdersCount">0</h3>
+          <span class="sales-kpi-sub">Transaksi Sukses</span>
+        </div>
+
+        <div class="sales-kpi-card">
+          <div class="sales-kpi-top">
+            <span class="sales-kpi-label">Rata-rata / Transaksi (AOV)</span>
+            <div class="sales-kpi-icon purple">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <h3 class="sales-kpi-val" id="adminSalesAvgPerOrder">Rp 0</h3>
+          <span class="sales-kpi-sub">Nilai Keranjang Rata-rata</span>
+        </div>
+
+        <div class="sales-kpi-card">
+          <div class="sales-kpi-top">
+            <span class="sales-kpi-label">Total Porsi Terjual</span>
+            <div class="sales-kpi-icon orange">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+              </svg>
+            </div>
+          </div>
+          <h3 class="sales-kpi-val" id="adminSalesTotalItemsSold">0</h3>
+          <span class="sales-kpi-sub">Porsi / Menu Terjual</span>
+        </div>
+      </div>
+
+      <!-- Top Selling Products Breakdown -->
+      <div class="top-selling-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="margin: 0;">Menu Terlaris (Top Selling Items Periode Ini)</h4>
+          <span class="sales-kpi-sub" id="adminTopSellingSub">Berdasarkan data penjualan periode terpilih</span>
+        </div>
+        <div class="top-selling-grid" id="topSellingGrid">
+          <!-- Populated by admin.js -->
+        </div>
+      </div>
+
+      <!-- Transactions Table with mini search -->
+      <div class="admin-table-wrapper">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-color); background: #ffffff; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: var(--text-main);">Rincian Transaksi Periode Ini</h4>
+            <span style="font-size: 12px; color: var(--text-muted);">Menampilkan riwayat transaksi yang sesuai dengan periode yang dipilih</span>
+          </div>
+          <div style="min-width: 260px;">
+            <input type="text" id="adminSalesSearchInput" placeholder="Cari nama, antrian, meja..." style="padding: 7px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-md); outline: none; width: 100%; box-sizing: border-box; font-family: inherit;" />
+          </div>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>No. Antrian</th>
+              <th>Pemesan</th>
+              <th>Tipe Pesanan</th>
+              <th>Metode Bayar</th>
+              <th>Item Pesanan</th>
+              <th>Total Tagihan</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="salesTransactionsBody">
+            <!-- Populated dynamically by admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 4: MANAJEMEN & JADWAL RESERVASI MEJA
+         ==================================================================== -->
+    <section class="admin-view-panel" id="panelAdminReservations" style="display: none;">
+      <div class="panel-header-bar">
+        <div class="panel-header-title">
+          <h3>Jadwal Booking Meja & Reservasi Acara</h3>
+          <p>Pantau seluruh pemesanan meja, konfirmasi check-in pelanggan, dan pantau status DP Cashless & sisa bayar.</p>
+        </div>
+        <div class="panel-header-actions">
+          <!-- Quick Date Filter Pills -->
+          <div class="admin-rsv-filter-pills" id="adminRsvFilterPills">
+            <button type="button" class="rsv-filter-pill active" data-rsv-filter="ALL">Semua</button>
+            <button type="button" class="rsv-filter-pill highlight" data-rsv-filter="TODAY">Hari Ini</button>
+            <button type="button" class="rsv-filter-pill" data-rsv-filter="TOMORROW">Besok</button>
+            <button type="button" class="rsv-filter-pill" data-rsv-filter="UPCOMING">Mendatang</button>
+            <button type="button" class="rsv-filter-pill" data-rsv-filter="COMPLETED">Selesai</button>
+          </div>
+          
+          <div class="admin-search-box" style="min-width: 170px;">
+            <input type="date" id="adminRsvDateFilter" title="Filter Tanggal Spesifik" />
+          </div>
+
+          <button type="button" class="btn-secondary-admin" id="btnRefreshRsv">
+            <span>Refresh Reservasi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Mini Cards for Reservations -->
+      <div class="rsv-kpi-summary-grid">
+        <div class="rsv-kpi-box">
+          <span class="rsv-kpi-label">Total Booking</span>
+          <strong class="rsv-kpi-val" id="rsvKpiTotal">0</strong>
+        </div>
+        <div class="rsv-kpi-box today-box">
+          <span class="rsv-kpi-label">Hari Ini</span>
+          <strong class="rsv-kpi-val" id="rsvKpiToday">0</strong>
+        </div>
+        <div class="rsv-kpi-box dp-box">
+          <span class="rsv-kpi-label">Total DP Masuk</span>
+          <strong class="rsv-kpi-val" id="rsvKpiTotalDp">Rp 0</strong>
+        </div>
+        <div class="rsv-kpi-box remain-box">
+          <span class="rsv-kpi-label">Sisa Tagihan Kasir</span>
+          <strong class="rsv-kpi-val" id="rsvKpiTotalRemain">Rp 0</strong>
+        </div>
+      </div>
+
+      <!-- Reservations Table -->
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Waktu Acara</th>
+              <th>Kode Booking</th>
+              <th>Pemesan & Kontak</th>
+              <th>Meja & Kursi</th>
+              <th>Menu Pre-Order</th>
+              <th>Rincian DP & Tagihan</th>
+              <th>Status</th>
+              <th style="text-align: right;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="adminReservationsTableBody">
+            <!-- Populated dynamically by admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       MODAL 1: TAMBAH / EDIT PRODUK & CUSTOM LEVEL PEDAS
+       ==================================================================== -->
+  <div class="modal-overlay" id="productFormModal">
+    <div class="modal-card admin-modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="productModalTitle">Tambah Produk Baru</h3>
+        <button type="button" class="modal-close" id="closeProductFormModal">&times;</button>
+      </div>
+
+      <form id="productForm" class="admin-form-scroll">
+        <input type="hidden" id="formProductId" value="" />
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="formProductTitle">Nama Menu / Produk <span class="required">*</span></label>
+            <input type="text" id="formProductTitle" class="admin-input" placeholder="Contoh: Paket Bundling Mie + Dimsum" required />
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label" for="formProductCategory">Kategori <span class="required">*</span></label>
+            <select id="formProductCategory" class="admin-input" required>
+              <!-- Dynamic Categories -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="formProductPrice">Harga Dasar (Rp) <span class="required">*</span></label>
+            <input type="number" id="formProductPrice" class="admin-input" placeholder="Contoh: 10000" min="0" required />
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label" for="formProductStatus">Status Stok Awal</label>
+            <select id="formProductStatus" class="admin-input">
+              <option value="Tersedia">Tersedia (Ready Stock)</option>
+              <option value="Habis">Habis (Out of Stock)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Foto Menu Produk <span class="required">*</span></label>
+          <input type="hidden" id="formProductImg" value="Menu/mie gacoan.webp" required />
+          
+          <!-- Image Upload / Picker Box -->
+          <div class="photo-picker-container">
+            <div class="photo-preview-box" id="photoPreviewBox">
+              <img id="imgPreviewTag" src="Menu/mie gacoan.webp" alt="Preview Foto Menu" />
+              <div class="preview-overlay-info">
+                <span id="previewImgName">mie gacoan.webp</span>
+              </div>
+            </div>
+
+            <div class="photo-upload-controls">
+              <!-- Upload from Local Folder / Computer Button -->
+              <input type="file" id="formProductFileInput" accept="image/*" style="display: none;" />
+              <button type="button" class="btn-choose-file" id="btnTriggerFileInput">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  <line x1="12" y1="11" x2="12" y2="17"></line>
+                  <line x1="9" y1="14" x2="15" y2="14"></line>
+                </svg>
+                <span>Pilih Foto dari Folder Komputer</span>
+              </button>
+              <span class="file-upload-hint">Format PNG, JPG, WEBP didukung langsung.</span>
+            </div>
+          </div>
+
+          <!-- Quick Selector from Existing Menu Folder -->
+          <div class="folder-gallery-selector">
+            <span class="gallery-heading">Atau Pilih dari Foto Folder Menu:</span>
+            <div class="gallery-thumbnails-grid" id="folderGalleryGrid">
+              <!-- Dynamically populated from available Menu/*.webp -->
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="formProductDesc">Deskripsi Menu</label>
+          <textarea id="formProductDesc" class="admin-input" rows="2" placeholder="Deskripsi kelezatan menu..."></textarea>
+        </div>
+
+        <!-- LEVEL VARIANT BUILDER SECTION -->
+        <div class="level-builder-box">
+          <div class="level-builder-header">
+            <div>
+              <label class="form-label" style="margin-bottom: 2px;">Varian Level Pedas / Pilihan Tambahan</label>
+              <span style="font-size: 12px; color: #64748b;">Aktifkan jika produk ini memiliki pilihan level dengan tambahan harga custom (+Rp).</span>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" id="formHasLevelToggle" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div id="levelBuilderContent" style="display: none; margin-top: 14px;">
+            <div class="levels-inputs-list" id="levelsInputsList">
+              <!-- Dynamic Level Rows (Level Name + Extra Price) -->
+            </div>
+
+            <button type="button" class="btn-add-level-row" id="btnAddLevelRow">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Tambah Baris Level Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="btnCancelProductForm">Batal</button>
+          <button type="submit" class="btn-primary-admin" id="btnSubmitProductForm">Simpan Produk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 2: TAMBAH KATEGORI BARU
+       ==================================================================== -->
+  <div class="modal-overlay" id="categoryFormModal">
+    <div class="modal-card admin-modal-card sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Tambah Kategori Menu Baru</h3>
+        <button type="button" class="modal-close" id="closeCategoryFormModal">&times;</button>
+      </div>
+
+      <form id="categoryForm" style="padding: 20px;">
+        <div class="form-group">
+          <label class="form-label" for="formCategoryName">Nama Kategori Baru <span class="required">*</span></label>
+          <input type="text" id="formCategoryName" class="admin-input" placeholder="Contoh: BUNDLING atau PROMO" required />
+          <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">Gunakan huruf kapital singkat (contoh: BUNDLING, SNACK, COMBO).</small>
+        </div>
+
+        <div class="modal-footer" style="padding: 14px 0 0 0; margin-top: 16px;">
+          <button type="button" class="btn-cancel" id="btnCancelCategoryForm">Batal</button>
+          <button type="submit" class="btn-primary-admin">Simpan Kategori</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Supabase Cloud Database & Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

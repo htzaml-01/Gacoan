@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Dapur (Kitchen KDS) - Mie Gacoan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dapur.css" />
+</head>
+<body>
+
+  <!-- Dapur Login Screen (Overlay bypassed) -->
+  <div class="dapur-login-overlay" id="dapurLoginOverlay" style="display: none;">
+    <div class="dapur-login-card">
+      <div class="dapur-login-header">
+        <div class="dapur-logo-box-lg">
+          <img src="asset/logo.png" alt="Mie Gacoan Logo" class="dapur-logo-img" />
+        </div>
+        <h2 class="dapur-login-title">Portal Dapur (Kitchen KDS)</h2>
+        <p class="dapur-login-desc">Silakan login sebagai staf dapur untuk memproses dan mengonfirmasi pesanan makanan yang sudah dibayar.</p>
+      </div>
+
+      <form id="dapurLoginForm" class="dapur-login-form">
+        <div class="dapur-form-group">
+          <label for="dapurEmail" class="dapur-label">Email / Username Dapur</label>
+          <input type="text" id="dapurEmail" class="dapur-input" placeholder="dapur@gacoan.id" required autocomplete="username" />
+        </div>
+        <div class="dapur-form-group">
+          <label for="dapurPassword" class="dapur-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="dapurPassword" class="dapur-input" placeholder="Masukkan password (dapur123)" required autocomplete="current-password" />
+            <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
+              <svg class="icon-eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-closed" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="dapur-msg" id="dapurLoginMsg"></div>
+        <button type="submit" class="btn-dapur-primary">Buka Layar Dapur KDS</button>
+        <div class="dapur-demo-note">
+          <small>Email: <strong>dapur@gacoan.id</strong> &nbsp;|&nbsp; Password: <strong>dapur123</strong></small>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Top Kitchen Navbar -->
+  <header class="dapur-navbar">
+    <div class="navbar-left">
+      <div class="dapur-logo-box">
+        <img src="asset/logo.png" alt="Mie Gacoan" />
+      </div>
+      <div class="dapur-nav-title">
+        <h1>MIE GACOAN &bull; PORTAL DAPUR (KITCHEN KDS)</h1>
+        <span class="live-clock" id="liveClock">00:00:00 WIB</span>
+      </div>
+    </div>
+
+    <div class="navbar-right">
+      <button type="button" class="btn-nav-link" id="btnDapurLogout" style="background: #ef4444; border-color: #dc2626; color: #ffffff;" title="Keluar dari Portal Dapur">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Keluar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Kitchen Content -->
+  <main class="dapur-main-container">
+
+    <!-- KPI & Quick Filter Bar -->
+    <section class="dapur-control-bar">
+      <div class="dapur-stats-group">
+        <div class="dapur-stat-pill orange">
+          <span class="stat-label">Perlu Dimasak:</span>
+          <strong id="statPendingKitchen">0</strong>
+        </div>
+        <div class="dapur-stat-pill blue">
+          <span class="stat-label">Sedang Dimasak:</span>
+          <strong id="statCookingKitchen">0</strong>
+        </div>
+        <div class="dapur-stat-pill green">
+          <span class="stat-label">Selesai Hari Ini:</span>
+          <strong id="statDoneKitchen">0</strong>
+        </div>
+      </div>
+
+      <div class="dapur-filter-group">
+        <div class="dapur-tabs">
+          <button type="button" class="dapur-tab active" data-filter="ACTIVE">Aktif Diproses (<span id="countActiveTab">0</span>)</button>
+          <button type="button" class="dapur-tab" data-filter="LUNAS">Baru Masuk (<span id="countNewTab">0</span>)</button>
+          <button type="button" class="dapur-tab" data-filter="SEDANG_DIMASAK">Sedang Dimasak (<span id="countCookingTab">0</span>)</button>
+          <button type="button" class="dapur-tab" data-filter="SELESAI">Selesai (<span id="countDoneTab">0</span>)</button>
+        </div>
+
+        <button type="button" class="btn-refresh-kds" id="btnRefreshKds" title="Segarkan Antrian">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Kitchen Orders Grid -->
+    <section class="dapur-orders-grid" id="dapurOrdersGrid">
+      <!-- Populated dynamically by dapur.js -->
+    </section>
+
+  </main>
+
+  <!-- Supabase Cloud Database & Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="dapur.js"></script>
+</body>
+</html>

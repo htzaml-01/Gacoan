@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mie Gacoan - Official Online Order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <!-- Midtrans Snap JS SDK (Sandbox) -->
+  <script type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="Mid-client-UAIgLQZN3ZwcCdgU"></script>
+</head>
+<body>
+
+  <!-- Mandatory Auth Gate Overlay (Forced Login Screen) -->
+  <div class="auth-gate-overlay" id="authGateOverlay">
+    <div class="auth-gate-card">
+      <div class="auth-gate-header">
+        <div class="auth-gate-logo">
+          <img src="asset/logo.png" alt="Mie Gacoan" class="auth-logo-img" />
+        </div>
+        <h2 class="auth-gate-title">Selamat Datang di Mie Gacoan</h2>
+        <p class="auth-gate-subtitle">Silakan masuk ke akun Anda terlebih dahulu untuk melihat menu dan memesan.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="tabGateLogin">Masuk</button>
+        <button type="button" class="auth-tab-btn" id="tabGateRegister">Daftar Akun</button>
+      </div>
+
+      <!-- Login Form (Email & Password) -->
+      <form id="gateLoginForm" class="auth-form">
+        <div class="auth-group">
+          <label for="gateLoginEmail" class="auth-label">Email</label>
+          <input type="email" id="gateLoginEmail" class="auth-input" placeholder="contoh: user@gacoan.com" required autocomplete="email" />
+        </div>
+        <div class="auth-group">
+          <label for="gateLoginPassword" class="auth-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="gateLoginPassword" class="auth-input" placeholder="Masukkan password Anda" required autocomplete="current-password" />
+            <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
+              <svg class="icon-eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-closed" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="auth-msg" id="gateLoginMsg"></div>
+        <button type="submit" class="btn-primary-blue auth-submit-btn">Masuk ke Gacoan</button>
+      </form>
+
+      <!-- Register Form (Email, Username / USN, Password / PW) -->
+      <form id="gateRegisterForm" class="auth-form" style="display: none;">
+        <div class="auth-group">
+          <label for="gateRegEmail" class="auth-label">Email</label>
+          <input type="email" id="gateRegEmail" class="auth-input" placeholder="contoh: budi@gmail.com" required autocomplete="email" />
+        </div>
+        <div class="auth-group">
+          <label for="gateRegUsername" class="auth-label">Username (USN)</label>
+          <input type="text" id="gateRegUsername" class="auth-input" placeholder="contoh: budigacoan" required autocomplete="username" />
+        </div>
+        <div class="auth-group">
+          <label for="gateRegPassword" class="auth-label">Password (PW)</label>
+          <div class="password-wrapper">
+            <input type="password" id="gateRegPassword" class="auth-input" placeholder="Minimal 6 karakter" required minlength="6" autocomplete="new-password" />
+            <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
+              <svg class="icon-eye-open" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="icon-eye-closed" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="auth-msg" id="gateRegMsg"></div>
+        <button type="submit" class="btn-primary-blue auth-submit-btn">Daftar & Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Application Wrapper (Blurred until logged in) -->
+  <div id="mainAppWrapper" class="app-wrapper app-blurred">
+
+    <main class="page-container">
+
+      <!-- Top Hero Banner -->
+      <header class="hero-banner-wrapper">
+        <div class="hero-banner">
+          <img src="asset/hero.png" alt="Mie Gacoan Hero Banner" class="hero-img" />
+        </div>
+      </header>
+
+      <!-- Store Profile & Info Bar -->
+      <section class="store-header">
+        <div class="store-identity">
+          <div class="logo-box">
+            <img src="asset/logo.png" alt="Mie Gacoan Logo" class="logo-img" />
+          </div>
+          <div class="store-details">
+            <h1 class="store-name">Mie Gacoan</h1>
+            <span class="status-badge">
+              <span class="status-dot"></span>
+              Open
+            </span>
+          </div>
+        </div>
+
+        <div class="store-actions">
+          <!-- User Account / Profile Button -->
+          <div id="authContainer" style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn-staff-portal" id="staffPortalShortcutBtn" style="display: none;" title="Buka Dashboard Kerja">
+              Buka Kasir POS
+            </button>
+            <button type="button" class="btn-auth-header" id="profileHeaderBtn">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span id="headerUserName">Profil Saya</span>
+            </button>
+          </div>
+
+          <button type="button" class="btn-info" id="infoBtn" aria-label="Informasi Restoran">
+            <svg class="info-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span class="info-text-full">Information</span>
+            <span class="info-text-short">Info</span>
+          </button>
+
+          <button type="button" class="btn-reservation-header" id="btnHeaderReservation" aria-label="Reservasi Meja">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Reservasi</span>
+          </button>
+
+          <button type="button" class="btn-cart-header" id="cartHeaderBtn" aria-label="Lihat Keranjang">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span class="cart-btn-text">Cart</span>
+            <span class="cart-badge-count" id="cartHeaderBadge">0</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Active Ticket Banner (If user has an active pending order) -->
+      <div id="activeTicketBanner" class="active-ticket-banner" style="display: none;">
+        <div class="active-ticket-info">
+          <span class="ticket-pulse-dot"></span>
+          <span>Pesanan Aktif: Antrian <strong id="bannerQueueNo">#A-001</strong> (<span id="bannerOrderStatus">Menunggu Pembayaran</span>)</span>
+        </div>
+        <button type="button" class="btn-view-ticket-sm" id="btnOpenCurrentTicket">Lihat Tiket Antrian</button>
+      </div>
+
+      <!-- Search & Filter Category Navigation Bar -->
+      <nav class="nav-bar-container">
+        <div class="nav-actions">
+          <button type="button" class="nav-icon-btn" id="searchToggleBtn" title="Cari Menu">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <button type="button" class="nav-icon-btn active-icon" title="Menu View">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Categories: MIE, DIMSUM, BEVERAGE -->
+        <div class="category-tabs" id="categoryTabs">
+          <a href="#category-mie" class="cat-tab active" data-category="MIE">MIE</a>
+          <a href="#category-dimsum" class="cat-tab" data-category="DIMSUM">DIMSUM</a>
+          <a href="#category-beverage" class="cat-tab" data-category="BEVERAGE">BEVERAGE</a>
+        </div>
+      </nav>
+
+      <!-- Search Input Box (Expandable) -->
+      <div class="search-container" id="searchBox" style="display: none;">
+        <div class="search-input-wrapper">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Cari menu Mie Gacoan..." />
+          <button type="button" id="clearSearchBtn" class="clear-btn">&times;</button>
+        </div>
+      </div>
+
+      <!-- Menu Section Content -->
+      <div class="menu-content" id="menuContent">
+
+        <!-- Category: MIE -->
+        <section class="menu-category-section" id="category-mie">
+          <h2 class="category-title">MIE</h2>
+          <div class="menu-grid">
+
+            <!-- Mie Gacoan -->
+            <article class="menu-card" data-id="mie-gacoan" data-category="mie" data-title="mie gacoan" data-price="10000" data-img="Menu/mie gacoan.webp" data-desc="Sensasi pedas manis menu ini dijamin bakal bikin kamu ketagihan. Bisa pilih tingkat kepedasan, lho!" data-has-level="true">
+              <div class="card-info">
+                <h3 class="card-title">Mie Gacoan</h3>
+                <p class="card-desc">Sensasi pedas manis khas Gacoan dengan taburan ayam cincang & pangsit renyah.</p>
+                <p class="card-price">Rp 10.000</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/mie gacoan.webp" alt="Mie Gacoan" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Mie Hompimpa -->
+            <article class="menu-card" data-id="mie-hompimpa" data-category="mie" data-title="mie hompimpa" data-price="10000" data-img="Menu/miehompimpa.webp" data-desc="Sensasi pedas asin gurih dengan bumbu spesial dan taburan daging ayam renyah. Bisa pilih tingkat kepedasan!" data-has-level="true">
+              <div class="card-info">
+                <h3 class="card-title">Mie Hompimpa</h3>
+                <p class="card-desc">Sensasi pedas asin gurih khas dengan bumbu racikan rahasia Gacoan.</p>
+                <p class="card-price">Rp 10.000</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/miehompimpa.webp" alt="Mie Hompimpa" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Mie Suit -->
+            <article class="menu-card" data-id="mie-suit" data-category="mie" data-title="mie suit" data-price="10000" data-img="Menu/miesuit.webp" data-desc="Mie gurih tanpa rasa pedas, sangat cocok untuk yang tidak suka pedas atau anak-anak dengan taburan ayam cincang dan pangsit goreng." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Mie Suit</h3>
+                <p class="card-desc">Sensasi gurih lembut tidak pedas, lengkap dengan topping ayam & pangsit.</p>
+                <p class="card-price">Rp 10.000</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/miesuit.webp" alt="Mie Suit" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- Category: DIMSUM -->
+        <section class="menu-category-section" id="category-dimsum">
+          <h2 class="category-title">DIMSUM</h2>
+          <div class="menu-grid">
+
+            <!-- Siomay -->
+            <article class="menu-card" data-id="siomay" data-category="dimsum" data-title="siomay" data-price="9500" data-img="Menu/siomay.webp" data-desc="Dimsum siomay ayam lembut dan juicy dibalut kulit tipis, disajikan hangat dengan saus cocolan spesial." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Siomay</h3>
+                <p class="card-desc">Siomay kukus lembut gurih dengan isian daging melimpah.</p>
+                <p class="card-price">Rp 9.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/siomay.webp" alt="Siomay" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Udang Keju -->
+            <article class="menu-card" data-id="udang-keju" data-category="dimsum" data-title="udang keju" data-price="9500" data-img="Menu/udangkeju.webp" data-desc="Olahan udang berbalut tepung renyah dengan lelehan keju mozarella gurih di dalamnya yang meleleh saat digigit." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Udang Keju</h3>
+                <p class="card-desc">Dimsum udang goreng dengan keju mozarella lumer di dalamnya.</p>
+                <p class="card-price">Rp 9.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/udangkeju.webp" alt="Udang Keju" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Udang Rambutan -->
+            <article class="menu-card" data-id="udang-rambutan" data-category="dimsum" data-title="udang rambutan" data-price="9500" data-img="Menu/udahngrambutan.webp" data-desc="Bola-bola udang juicy dengan balutan kulit pangsit renyah berserat mirip rambutan yang super crispy." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Udang Rambutan</h3>
+                <p class="card-desc">Bola udang renyah bertekstur krispi di luar dan juicy di dalam.</p>
+                <p class="card-price">Rp 9.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/udahngrambutan.webp" alt="Udang Rambutan" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Lumpia Udang -->
+            <article class="menu-card" data-id="lumpia-udang" data-category="dimsum" data-title="lumpia udang" data-price="9500" data-img="Menu/lumpiaudang.webp" data-desc="Lumpia goreng isi olahan udang segar dan rempah pilihan, digoreng keemasan hingga renyah maksimal." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Lumpia Udang</h3>
+                <p class="card-desc">Lumpia isi daging udang cincang dengan bumbu nikmat.</p>
+                <p class="card-price">Rp 9.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/lumpiaudang.webp" alt="Lumpia Udang" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Pangsit Goreng -->
+            <article class="menu-card" data-id="pangsit-goreng" data-category="dimsum" data-title="pangsit goreng" data-price="10500" data-img="Menu/pangsitgoreng.webp" data-desc="Pangsit goreng renyah ukuran besar dengan isian olahan ayam gurih, cocok sebagai pelengkap mie." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Pangsit Goreng</h3>
+                <p class="card-desc">Pangsit goreng renyah legendaris dengan isian ayam istimewa.</p>
+                <p class="card-price">Rp 10.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/pangsitgoreng.webp" alt="Pangsit Goreng" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- Category: BEVERAGE -->
+        <section class="menu-category-section" id="category-beverage">
+          <h2 class="category-title">BEVERAGE</h2>
+          <div class="menu-grid">
+
+            <!-- Es Gobak Sodor -->
+            <article class="menu-card" data-id="es-gobak-sodor" data-category="beverage" data-title="es gobak sodor" data-price="9500" data-img="Menu/esgobaksodor.webp" data-desc="Minuman es buah segar khas Gacoan berisikan potongan buah, cincau, dan selasih dengan sirup manis segar." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Es Gobak Sodor</h3>
+                <p class="card-desc">Es buah manis segar dengan paduan buah dan cincau segar.</p>
+                <p class="card-price">Rp 9.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/esgobaksodor.webp" alt="Es Gobak Sodor" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Thai Tea -->
+            <article class="menu-card" data-id="thai-tea" data-category="beverage" data-title="thai tea" data-price="8500" data-img="Menu/thaitea.webp" data-desc="Teh khas Thailand berpadu dengan susu kental manis creamy yang nikmat disajikan dingin." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Thai Tea</h3>
+                <p class="card-desc">Teh otentik Thailand dengan kelembutan susu manis creamy.</p>
+                <p class="card-price">Rp 8.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/thaitea.webp" alt="Thai Tea" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Thai Green Tea -->
+            <article class="menu-card" data-id="thai-green-tea" data-category="beverage" data-title="thai green tea" data-price="8500" data-img="Menu/thaigreentea.webp" data-desc="Green tea wangi khas Thailand dipadukan dengan susu segar yang creamy dan menyegarkan." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Thai Green Tea</h3>
+                <p class="card-desc">Teh hijau aroma khas berpadu susu creamy yang menyegarkan.</p>
+                <p class="card-price">Rp 8.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/thaigreentea.webp" alt="Thai Green Tea" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Lemon Tea -->
+            <article class="menu-card" data-id="lemon-tea" data-category="beverage" data-title="lemon tea" data-price="6000" data-img="Menu/lemontea.webp" data-desc="Perpaduan seduhan teh hitam segar dengan perasan lemon asam manis yang melegakan dahaga." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Lemon Tea</h3>
+                <p class="card-desc">Es teh segar dengan aroma dan rasa perasan lemon alami.</p>
+                <p class="card-price">Rp 6.000</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/lemontea.webp" alt="Lemon Tea" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Orange -->
+            <article class="menu-card" data-id="orange" data-category="beverage" data-title="orange" data-price="5500" data-img="Menu/orange.webp" data-desc="Minuman jeruk manis segar dingin pereda pedas terbaik sehabis santap Mie Gacoan." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Orange</h3>
+                <p class="card-desc">Minuman sari jeruk manis dingin penyegar dahaga.</p>
+                <p class="card-price">Rp 5.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/orange.webp" alt="Orange" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Tea -->
+            <article class="menu-card" data-id="es-tea" data-category="beverage" data-title="tea es tea" data-price="4500" data-img="Menu/Tea.webp" data-desc="Es teh manis tradisional khas Indonesia, wangi melati dan sangat segar." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Es Tea</h3>
+                <p class="card-desc">Es teh manis wangi khas melati pelepas dahaga.</p>
+                <p class="card-price">Rp 4.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/Tea.webp" alt="Es Tea" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+            <!-- Air Mineral -->
+            <article class="menu-card" data-id="air-mineral" data-category="beverage" data-title="air mineral" data-price="4500" data-img="Menu/airmineral.webp" data-desc="Air mineral murni dalam kemasan botol higienis dan menyegarkan." data-has-level="false">
+              <div class="card-info">
+                <h3 class="card-title">Air Mineral</h3>
+                <p class="card-desc">Air mineral botol murni dan segar.</p>
+                <p class="card-price">Rp 4.500</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/airmineral.webp" alt="Air Mineral" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Floating Cart Bar (Bottom) -->
+    <aside class="floating-cart-bar" id="floatingCartBar">
+      <div class="floating-cart-inner">
+        <div class="floating-cart-info">
+          <span class="floating-cart-badge" id="floatingCartCount">0 Menu</span>
+          <span class="floating-cart-total" id="floatingCartTotal">Rp 0</span>
+        </div>
+        <button type="button" class="btn-view-cart" id="openCartDrawerBtn">
+          <span>Lihat Keranjang</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Product Detail & Level Selector Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="product-modal-dialog">
+      <div class="modal-hero-wrapper">
+        <img id="modalProductImg" src="" alt="Menu Image" class="modal-hero-img" />
+        <button type="button" class="btn-circle-close" id="closeProductModal" aria-label="Tutup">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-scroll-content">
+        <div class="product-header-section">
+          <h2 class="modal-product-title" id="modalProductTitle">MIE GACOAN</h2>
+          <div class="modal-product-price" id="modalProductPrice">Rp10.000</div>
+          <p class="modal-product-desc" id="modalProductDesc">
+            Sensasi pedas manis menu ini dijamin bakal bikin kamu ketagihan. Bisa pilih tingkat kepedasan, lho!
+          </p>
+        </div>
+
+        <div class="level-section" id="levelPedasSection">
+          <div class="level-header">
+            <h3 class="level-title">LEVEL PEDAS</h3>
+            <span class="level-subtitle">Must be selected max. 1</span>
+          </div>
+
+          <div class="level-options-list">
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 0</span>
+              <input type="radio" name="pedas_level" value="LEVEL 0" data-extra-price="0" checked />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 1</span>
+              <input type="radio" name="pedas_level" value="LEVEL 1" data-extra-price="0" />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 2</span>
+              <input type="radio" name="pedas_level" value="LEVEL 2" data-extra-price="0" />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 3</span>
+              <input type="radio" name="pedas_level" value="LEVEL 3" data-extra-price="0" />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 4</span>
+              <input type="radio" name="pedas_level" value="LEVEL 4" data-extra-price="0" />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 6 <span class="extra-cost">(+ Rp1.000)</span></span>
+              <input type="radio" name="pedas_level" value="LEVEL 6" data-extra-price="1000" />
+              <span class="custom-radio"></span>
+            </label>
+
+            <label class="level-option-row">
+              <span class="level-name">LEVEL 8 <span class="extra-cost">(+ Rp1.000)</span></span>
+              <input type="radio" name="pedas_level" value="LEVEL 8" data-extra-price="1000" />
+              <span class="custom-radio"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-header">
+            <span class="notes-title">Notes</span>
+            <span class="notes-optional">Optional</span>
+          </div>
+          <input type="text" id="modalProductNotes" class="notes-input" placeholder="Contoh: jangan terlalu pedas / es batu sedikit..." />
+        </div>
+      </div>
+
+      <div class="modal-footer-section">
+        <div class="qty-row">
+          <span class="qty-label">Total Order</span>
+          <div class="qty-counter">
+            <button type="button" class="btn-qty" id="qtyMinusBtn" aria-label="Kurang">&minus;</button>
+            <span class="qty-display" id="qtyDisplay">1</span>
+            <button type="button" class="btn-qty" id="qtyPlusBtn" aria-label="Tambah">&plus;</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary-blue" id="modalAddOrdersBtn">
+          Add Orders &minus; <span id="modalBtnTotalPrice">Rp10.000</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cart Drawer / Modal with Dining Type & Payment Method -->
+  <div class="modal-overlay" id="cartDrawerModal">
+    <div class="cart-drawer-dialog">
+      <div class="cart-drawer-header">
+        <div class="cart-title-wrap">
+          <h2 class="cart-title">Keranjang Pesanan</h2>
+          <span class="cart-badge-pill" id="cartItemsCount">0 Items</span>
+        </div>
+        <button type="button" class="modal-close" id="closeCartDrawer">&times;</button>
+      </div>
+
+      <div class="cart-drawer-body" id="cartItemsList">
+        <!-- Dynamic Cart Items Generated by JS -->
+      </div>
+
+      <!-- Order Options & Payment Method in Cart -->
+      <div class="cart-checkout-options" id="cartCheckoutOptions">
+        
+        <!-- Dining Option Toggle (Dine In vs Take Away) -->
+        <div class="option-block">
+          <label class="option-label">Tipe Pesanan <span style="color: #ef4444;">*</span></label>
+          <div class="dining-type-toggle">
+            <label class="dining-radio">
+              <input type="radio" name="orderDiningType" value="Dine In" checked />
+              <span>Dine In (Makan di Tempat)</span>
+            </label>
+            <label class="dining-radio">
+              <input type="radio" name="orderDiningType" value="Take Away" />
+              <span>Take Away (Bungkus)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Table Number (MANDATORY ONLY FOR DINE IN - 25 TABLES DROPDOWN) -->
+        <div class="option-block" id="tableNoBlock">
+          <label class="option-label" for="orderTableNo">Nomor Meja <span style="color: #ef4444;">* (Wajib diisi untuk Dine In)</span></label>
+          <select id="orderTableNo" class="form-select">
+            <option value="Meja 01" selected>Meja 01</option>
+            <option value="Meja 02">Meja 02</option>
+            <option value="Meja 03">Meja 03</option>
+            <option value="Meja 04">Meja 04</option>
+            <option value="Meja 05">Meja 05</option>
+            <option value="Meja 06">Meja 06</option>
+            <option value="Meja 07">Meja 07</option>
+            <option value="Meja 08">Meja 08</option>
+            <option value="Meja 09">Meja 09</option>
+            <option value="Meja 10">Meja 10</option>
+            <option value="Meja 11">Meja 11</option>
+            <option value="Meja 12">Meja 12</option>
+            <option value="Meja 13">Meja 13</option>
+            <option value="Meja 14">Meja 14</option>
+            <option value="Meja 15">Meja 15</option>
+            <option value="Meja 16">Meja 16</option>
+            <option value="Meja 17">Meja 17</option>
+            <option value="Meja 18">Meja 18</option>
+            <option value="Meja 19">Meja 19</option>
+            <option value="Meja 20">Meja 20</option>
+            <option value="Meja 21">Meja 21</option>
+            <option value="Meja 22">Meja 22</option>
+            <option value="Meja 23">Meja 23</option>
+            <option value="Meja 24">Meja 24</option>
+            <option value="Meja 25">Meja 25</option>
+          </select>
+          <span class="field-error-msg" id="tableNoErrorMsg" style="display: none; color: #ef4444; font-size: 12px; font-weight: 600;">Silakan pilih nomor meja (Meja 01 - 25) untuk Dine In!</span>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="option-block">
+          <label class="option-label">Pilih Metode Pembayaran</label>
+          <div class="payment-methods-grid">
+            <label class="payment-method-card">
+              <input type="radio" name="payment_method" value="Cashless" checked />
+              <div class="payment-card-inner">
+                <span class="pay-icon">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                </span>
+                <span class="pay-name">Cashless</span>
+                <span class="pay-subtext">QRIS / VA / E-Wallet</span>
+              </div>
+            </label>
+            <label class="payment-method-card">
+              <input type="radio" name="payment_method" value="Cash" />
+              <div class="payment-card-inner">
+                <span class="pay-icon">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <path d="M6 12h.01M18 12h.01"></path>
+                  </svg>
+                </span>
+                <span class="pay-name">Cash</span>
+                <span class="pay-subtext">Bayar di Kasir</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="cart-drawer-footer" id="cartDrawerFooter">
+        <div class="cart-summary-card">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="cartSubtotal">Rp 0</span>
+          </div>
+          <div class="summary-row">
+            <span>PB1 (Pajak Restoran 10%)</span>
+            <span id="cartTax">Rp 0</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total Pembayaran</span>
+            <span id="cartGrandTotal">Rp 0</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary-blue" id="checkoutBtn">
+          <span>Lanjut ke Pembayaran</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       PAYMENT GATEWAY MODAL (FOR QRIS & DEBIT/VA ONLINE)
+       ======================================================================== -->
+  <div class="modal-overlay" id="paymentGatewayModal">
+    <div class="modal-card pg-modal-card">
+      <div class="pg-header">
+        <div class="pg-brand">
+          <span class="pg-secure-badge">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Secure Payment Gateway
+          </span>
+          <h3 class="pg-title">Gacoan Pay Gateway</h3>
+        </div>
+        <button type="button" class="modal-close" id="closePgModal">&times;</button>
+      </div>
+
+      <div class="pg-body">
+        
+        <!-- Summary Total in Gateway -->
+        <div class="pg-amount-box">
+          <span class="pg-amount-label">Total Tagihan Pembayaran</span>
+          <h2 class="pg-amount-val" id="pgTotalAmount">Rp 0</h2>
+          <div class="pg-merchant-info">Merchant: <strong>Mie Gacoan Official Store</strong></div>
+        </div>
+
+        <!-- Dynamic Gateway View: QRIS -->
+        <div id="pgQrisView" class="pg-view-section">
+          <div class="qris-box-wrapper">
+            <div class="qris-header-logos">
+              <span class="qris-brand-logo">QRIS</span>
+              <span class="qris-supported">Gopay &bull; OVO &bull; DANA &bull; ShopeePay &bull; BCA Mobile</span>
+            </div>
+            <div class="qris-qr-frame">
+              <img id="pgDynamicQrImage" src="" alt="Dynamic QRIS Code" class="qris-qr-img" />
+            </div>
+            <div class="qris-countdown">
+              <span>Selesaikan pembayaran dalam:</span>
+              <strong id="pgCountdownTimer">04:59</strong>
+            </div>
+          </div>
+
+          <div class="pg-instruction-note">
+            Scan QR Code di atas menggunakan aplikasi m-Banking atau E-Wallet pilihan Anda.
+          </div>
+
+          <button type="button" class="btn-pg-pay-success" id="btnPgSimulateQrisPay">
+            <span>Simulasi Bayar QRIS Berhasil</span>
+          </button>
+        </div>
+
+        <!-- Dynamic Gateway View: Debit / VA Card -->
+        <div id="pgDebitView" class="pg-view-section" style="display: none;">
+          <div class="pg-bank-options">
+            <label class="pg-bank-pill">
+              <input type="radio" name="pg_bank" value="BCA" checked />
+              <span>BCA Virtual Account</span>
+            </label>
+            <label class="pg-bank-pill">
+              <input type="radio" name="pg_bank" value="Mandiri" />
+              <span>Mandiri VA</span>
+            </label>
+            <label class="pg-bank-pill">
+              <input type="radio" name="pg_bank" value="BRI" />
+              <span>BRI (BRIVA)</span>
+            </label>
+          </div>
+
+          <div class="va-display-box">
+            <span class="va-label">Nomor Virtual Account:</span>
+            <div class="va-code-row">
+              <strong id="pgVaNumber">8910 8219 4819 0281</strong>
+              <button type="button" class="btn-copy-va" id="btnCopyVa">Salin</button>
+            </div>
+            <small style="color: #64748b; font-size: 11.5px;">Atas Nama: <strong>Mie Gacoan POS</strong></small>
+          </div>
+
+          <button type="button" class="btn-pg-pay-success" id="btnPgSimulateDebitPay">
+            <span>Simulasi Bayar VA / Debit Berhasil</span>
+          </button>
+        </div>
+
+        <button type="button" class="btn-pg-cancel" id="btnCancelPg">Batalkan & Kembali ke Keranjang</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Digital Queue Ticket Modal -->
+  <div class="modal-overlay" id="queueTicketModal">
+    <div class="modal-card ticket-modal-card">
+      <div class="ticket-header">
+        <div class="ticket-brand">
+          <img src="asset/logo.png" alt="Mie Gacoan" class="ticket-logo" />
+          <div>
+            <h3 class="ticket-title">TIKET ANTRIAN GACOAN</h3>
+            <span class="ticket-date" id="ticketOrderTime">Hari Ini</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close" id="closeTicketModal">&times;</button>
+      </div>
+
+      <div class="ticket-body">
+        <div class="queue-number-box">
+          <span class="queue-label">NOMOR ANTRIAN ANDA</span>
+          <h1 class="queue-number" id="ticketQueueNumber">#A-001</h1>
+          <div class="payment-status-badge pending" id="ticketPaymentBadge">
+            Menunggu Konfirmasi Kasir
+          </div>
+        </div>
+
+        <div class="qr-code-section">
+          <div class="qr-code-box">
+            <img id="ticketQrImage" src="" alt="QR Code Antrian" class="qr-img" />
+          </div>
+          <p class="qr-hint">Tunjukkan <strong>Nomor Antrian</strong> atau <strong>QR Code</strong> ini ke Kasir saat melakukan verifikasi / pengambilan pesanan.</p>
+        </div>
+
+        <div class="ticket-details-box">
+          <div class="ticket-meta-row">
+            <span>Pemesan:</span>
+            <strong id="ticketCustomerName">Budi</strong>
+          </div>
+          <div class="ticket-meta-row">
+            <span>Tipe Pesanan:</span>
+            <strong id="ticketDiningType">Dine In (Meja 08)</strong>
+          </div>
+          <div class="ticket-meta-row">
+            <span>Metode Bayar:</span>
+            <strong id="ticketPaymentMethod">QRIS (LUNAS via Payment Gateway)</strong>
+          </div>
+          <div class="ticket-divider"></div>
+          <div class="ticket-items-list" id="ticketItemsSummary">
+            <!-- Populated by JS -->
+          </div>
+          <div class="ticket-divider"></div>
+          <div class="ticket-meta-row total-row">
+            <span>Total Tagihan:</span>
+            <strong id="ticketGrandTotal" style="color: #0066ff;">Rp 0</strong>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary-blue" id="ticketDismissBtn" style="width: 100%; margin-top: 14px;">
+          Tutup & Simpan Tiket
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile View Modal with Order & Reservation History -->
+  <div class="modal-overlay" id="userProfileModal">
+    <div class="modal-card modal-profile-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Profil & Riwayat Akun</h3>
+        <button type="button" class="modal-close" id="closeProfileModal">&times;</button>
+      </div>
+      <div class="modal-body modal-profile-body">
+        <div class="profile-card">
+          <div class="profile-avatar" id="profileAvatar">U</div>
+          <div class="profile-info">
+            <h4 id="profileUsername" class="profile-name">Username</h4>
+            <p id="profileEmail" class="profile-email">email@example.com</p>
+          </div>
+        </div>
+
+
+        <!-- History Switcher Tabs -->
+        <div class="profile-history-tabs">
+          <button type="button" class="history-tab-btn active" id="btnHistOrders">Riwayat Pesanan</button>
+          <button type="button" class="history-tab-btn" id="btnHistReservations">Riwayat Reservasi</button>
+        </div>
+
+        <!-- Orders History List -->
+        <div class="history-list-container" id="profileOrdersList">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+
+        <!-- Reservations History List -->
+        <div class="history-list-container" id="profileReservationsList" style="display: none;">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+
+        <button type="button" class="btn-logout" id="logoutBtn" style="margin-top: 10px;">Keluar (Logout)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Information Modal -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Informasi Restoran</h3>
+        <button type="button" class="modal-close" id="closeInfoModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-item">
+          <strong>Restoran:</strong>
+          <p>Mie Gacoan</p>
+        </div>
+        <div class="info-item">
+          <strong>Jam Operasional:</strong>
+          <p>Setiap Hari: 09:00 - 22:00 WIB</p>
+        </div>
+        <div class="info-item">
+          <strong>Status:</strong>
+          <p><span class="status-dot"></span> Buka (Open for Dine-in & Takeaway)</p>
+        </div>
+        <div class="info-item">
+          <strong>Layanan:</strong>
+          <p>Dine In, Take Away, Delivery</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       RESERVATION & EVENT BOOKING MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="modalReservation">
+    <div class="modal-card modal-reservation-card">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <h3 class="modal-title">Reservasi Meja & Booking Acara</h3>
+          <p class="modal-subtitle">Min. belanja Rp15.000/kursi • DP Minimal 50% (Wajib Cashless)</p>
+        </div>
+        <button type="button" class="modal-close" id="closeReservationModal">&times;</button>
+      </div>
+
+      <div class="modal-body modal-reservation-body">
+        <form id="reservationForm">
+          <!-- Step 1: Info Pemesan -->
+          <div class="rsv-section">
+            <h4 class="rsv-section-title">1. Data Pemesan / Acara</h4>
+            <div class="rsv-grid-2">
+              <div class="auth-group">
+                <label for="rsvCustomerName" class="auth-label">Nama Pemesan / Acara <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="rsvCustomerName" class="auth-input" placeholder="contoh: Budi (Ultah / Reuni)" required />
+              </div>
+              <div class="auth-group">
+                <label for="rsvPhone" class="auth-label">Nomor WhatsApp <span style="color: #ef4444;">*</span></label>
+                <input type="tel" id="rsvPhone" class="auth-input" placeholder="contoh: 08123456789" required />
+              </div>
+            </div>
+            <div class="rsv-grid-2">
+              <div class="auth-group">
+                <label for="rsvDate" class="auth-label">Tanggal Reservasi <span style="color: #ef4444;">*</span></label>
+                <input type="date" id="rsvDate" class="auth-input" required />
+              </div>
+              <div class="auth-group">
+                <label for="rsvTime" class="auth-label">Jam Kedatangan <span style="color: #ef4444;">*</span></label>
+                <input type="time" id="rsvTime" class="auth-input" min="09:00" max="21:30" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Pilih Meja & Jumlah Kursi -->
+          <div class="rsv-section">
+            <div class="rsv-section-header">
+              <h4 class="rsv-section-title">2. Pilih Meja & Kursi (Maks. 5 Kursi / Meja)</h4>
+              <span class="rsv-badge-hint">Bisa pilih > 1 meja</span>
+            </div>
+            
+            <p class="rsv-helper-text">Silakan klik meja yang ingin dipesan untuk acara Anda:</p>
+            <div class="rsv-tables-grid" id="rsvTablesGrid">
+              <!-- Rendered dynamically (Meja 01 s/d Meja 12) -->
+            </div>
+
+            <div class="rsv-table-summary-bar">
+              <div class="rsv-selected-tables-info">
+                Meja Dipilih: <strong id="rsvSelectedTablesText" style="color: #0066ff;">Belum ada</strong> 
+                <span id="rsvMaxCapacityText" style="font-size: 12px; color: #6b7280;">(Kapasitas Maks: 0 Kursi)</span>
+              </div>
+            </div>
+
+            <div class="auth-group" style="margin-top: 14px;">
+              <label for="rsvSeatsCount" class="auth-label">Jumlah Kursi Tamu Yang Dibutuhkan <span style="color: #ef4444;">*</span></label>
+              <div class="rsv-seat-stepper">
+                <button type="button" class="btn-seat-step" id="btnSeatMinus">&minus;</button>
+                <input type="number" id="rsvSeatsCount" class="auth-input rsv-seat-input" min="1" max="60" value="4" required />
+                <button type="button" class="btn-seat-step" id="btnSeatPlus">&plus;</button>
+                <span class="seat-unit-label">Kursi Tamu</span>
+              </div>
+              <span class="field-error-msg" id="rsvSeatErrorMsg" style="display: none; color: #ef4444; font-size: 12px; margin-top: 4px;"></span>
+            </div>
+          </div>
+
+          <!-- Step 3: Minimum Spend Tracker & Menu Selection -->
+          <div class="rsv-section">
+            <div class="rsv-spend-target-card">
+              <div class="spend-target-top">
+                <div>
+                  <span class="spend-target-title">Syarat Minimal Belanja Menu:</span>
+                  <div class="spend-target-calc"><span id="rsvSeatMultiplier">4</span> kursi &times; Rp15.000 = <strong id="rsvMinSpendAmount">Rp60.000</strong></div>
+                </div>
+                <div class="spend-status-box" id="spendStatusBox">
+                  <span class="spend-status-label">Total Menu Dipilih</span>
+                  <span class="spend-status-value" id="rsvCurrentMenuTotal">Rp0</span>
+                </div>
+              </div>
+              
+              <div class="spend-progress-bar">
+                <div class="spend-progress-fill" id="spendProgressFill" style="width: 0%;"></div>
+              </div>
+
+              <div class="spend-alert-msg" id="spendAlertMsg">
+                Silakan pilih menu minimal senilai <strong>Rp60.000</strong>
+              </div>
+            </div>
+
+            <h4 class="rsv-section-title" style="margin-top: 18px;">3. Pilih Menu Gacoan untuk Acara</h4>
+            <div class="rsv-menu-list" id="rsvMenuList">
+              <!-- Rendered dynamically with live +/- controls -->
+            </div>
+          </div>
+
+          <!-- Step 4: Opsi Pembayaran DP (Wajib Cashless) -->
+          <div class="rsv-section">
+            <h4 class="rsv-section-title">4. Pembayaran DP (Wajib Cashless)</h4>
+            
+            <div class="rsv-dp-options">
+              <label class="rsv-dp-card active" id="dpOption50Label">
+                <input type="radio" name="rsvDpOption" value="50" checked />
+                <div class="dp-card-inner">
+                  <div class="dp-badge">DP 50% (Rekomendasi)</div>
+                  <div class="dp-amount" id="rsvDp50Amount">Rp0</div>
+                  <div class="dp-sub">Sisa <span id="rsvDp50Remain">Rp0</span> dibayar saat tiba di kasir</div>
+                </div>
+              </label>
+
+              <label class="rsv-dp-card" id="dpOption100Label">
+                <input type="radio" name="rsvDpOption" value="100" />
+                <div class="dp-card-inner">
+                  <div class="dp-badge dp-badge-full">Lunas 100%</div>
+                  <div class="dp-amount" id="rsvDp100Amount">Rp0</div>
+                  <div class="dp-sub">Langsung lunas di awal (Bebas antri kasir)</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="rsv-payment-notice">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              <span>Pembayaran DP diproses otomatis secara instan via <strong>Midtrans Cashless (QRIS / GoPay / VA)</strong></span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="rsv-footer-submit">
+            <div class="rsv-total-payable">
+              <span class="rsv-payable-label">Total Tagihan DP Sekarang:</span>
+              <span class="rsv-payable-value" id="rsvPayableNow">Rp0</span>
+            </div>
+            <button type="submit" class="btn-primary-blue rsv-submit-btn" id="btnSubmitReservation">
+              Bayar DP & Konfirmasi Reservasi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservation Ticket Modal (View Confirmation) -->
+  <div class="modal-overlay" id="modalReservationTicket">
+    <div class="modal-card modal-ticket-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Tiket Reservasi Acara</h3>
+        <button type="button" class="modal-close" id="closeRsvTicketModal">&times;</button>
+      </div>
+      <div class="modal-body" id="rsvTicketBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Cloud Database & Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

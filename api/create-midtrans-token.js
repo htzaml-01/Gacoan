@@ -1,7 +1,7 @@
 const https = require('https');
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-YourKeyHere';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' && !MIDTRANS_SERVER_KEY.startsWith('SB-');
+const IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 
 const SNAP_API_HOST = IS_PRODUCTION
   ? 'app.midtrans.com'

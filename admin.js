@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------------------------------------------------
   // Initial Master Database Seeding
   // ----------------------------------------------------------------------
-  const INITIAL_CATEGORIES = ['MIE', 'DIMSUM', 'BEVERAGE'];
+  const INITIAL_CATEGORIES = ['MIE', 'DIMSUM', 'BEVERAGE', 'MIRAS'];
 
   const INITIAL_PRODUCTS = [
     {
@@ -204,16 +204,51 @@ document.addEventListener('DOMContentLoaded', () => {
       hasLevel: false,
       levels: [],
       status: 'Tersedia'
+    },
+    {
+      id: 'prod-1790004682913',
+      title: 'Jack And Daniels',
+      category: 'MIRAS',
+      price: 100000,
+      img: 'Menu/jackdaniels.jpg',
+      desc: 'Kesegaran Whiskey yang sangat menyegarkan',
+      hasLevel: false,
+      levels: [],
+      status: 'Tersedia'
     }
   ];
 
   const getCategories = () => {
+    let cats = [];
     try {
       const stored = JSON.parse(localStorage.getItem(DB_CATEGORIES_KEY));
-      if (stored && Array.isArray(stored) && stored.length > 0) return stored;
+      if (stored && Array.isArray(stored) && stored.length > 0) {
+        cats = [...stored];
+      }
     } catch (e) {}
-    localStorage.setItem(DB_CATEGORIES_KEY, JSON.stringify(INITIAL_CATEGORIES));
-    return INITIAL_CATEGORIES;
+
+    INITIAL_CATEGORIES.forEach(c => {
+      if (!cats.some(existing => existing.trim().toUpperCase() === c.trim().toUpperCase())) {
+        cats.push(c);
+      }
+    });
+
+    const prods = getProducts();
+    if (Array.isArray(prods)) {
+      prods.forEach(p => {
+        if (p && p.category) {
+          const catName = String(p.category).trim().toUpperCase();
+          if (catName && !cats.some(existing => existing.trim().toUpperCase() === catName)) {
+            cats.push(catName);
+          }
+        }
+      });
+    }
+
+    try {
+      localStorage.setItem(DB_CATEGORIES_KEY, JSON.stringify(cats));
+    } catch (e) {}
+    return cats;
   };
 
   const saveCategories = (cats) => {

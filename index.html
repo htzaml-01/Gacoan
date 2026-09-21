@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20260921_02" />
   <!-- Midtrans Snap JS SDK (Sandbox) -->
   <script type="text/javascript"
     src="https://app.sandbox.midtrans.com/snap/snap.js"
@@ -35,7 +35,7 @@
       <form id="gateLoginForm" class="auth-form">
         <div class="auth-group">
           <label for="gateLoginEmail" class="auth-label">Email</label>
-          <input type="email" id="gateLoginEmail" class="auth-input" placeholder="contoh: user@gacoan.com" required autocomplete="email" />
+          <input type="email" id="gateLoginEmail" class="auth-input" placeholder="Masukkan email Anda" required autocomplete="email" />
         </div>
         <div class="auth-group">
           <label for="gateLoginPassword" class="auth-label">Password</label>
@@ -57,18 +57,18 @@
         <button type="submit" class="btn-primary-blue auth-submit-btn">Masuk ke Gacoan</button>
       </form>
 
-      <!-- Register Form (Email, Username / USN, Password / PW) -->
+      <!-- Register Form (Email, Username, Password) -->
       <form id="gateRegisterForm" class="auth-form" style="display: none;">
         <div class="auth-group">
           <label for="gateRegEmail" class="auth-label">Email</label>
-          <input type="email" id="gateRegEmail" class="auth-input" placeholder="contoh: budi@gmail.com" required autocomplete="email" />
+          <input type="email" id="gateRegEmail" class="auth-input" placeholder="Masukkan email Anda" required autocomplete="email" />
         </div>
         <div class="auth-group">
-          <label for="gateRegUsername" class="auth-label">Username (USN)</label>
-          <input type="text" id="gateRegUsername" class="auth-input" placeholder="contoh: budigacoan" required autocomplete="username" />
+          <label for="gateRegUsername" class="auth-label">Username</label>
+          <input type="text" id="gateRegUsername" class="auth-input" placeholder="Masukkan username" required autocomplete="username" />
         </div>
         <div class="auth-group">
-          <label for="gateRegPassword" class="auth-label">Password (PW)</label>
+          <label for="gateRegPassword" class="auth-label">Password</label>
           <div class="password-wrapper">
             <input type="password" id="gateRegPassword" class="auth-input" placeholder="Minimal 6 karakter" required minlength="6" autocomplete="new-password" />
             <button type="button" class="btn-toggle-pw" aria-label="Lihat password" tabindex="-1">
@@ -183,11 +183,12 @@
           </button>
         </div>
 
-        <!-- Categories: MIE, DIMSUM, BEVERAGE -->
+        <!-- Categories: MIE, DIMSUM, BEVERAGE, MIRAS -->
         <div class="category-tabs" id="categoryTabs">
           <a href="#category-mie" class="cat-tab active" data-category="MIE">MIE</a>
           <a href="#category-dimsum" class="cat-tab" data-category="DIMSUM">DIMSUM</a>
           <a href="#category-beverage" class="cat-tab" data-category="BEVERAGE">BEVERAGE</a>
+          <a href="#category-miras" class="cat-tab" data-category="MIRAS">MIRAS</a>
         </div>
       </nav>
 
@@ -422,6 +423,24 @@
               </div>
             </article>
 
+          </div>
+        </section>
+
+        <!-- Category: MIRAS -->
+        <section class="menu-category-section" id="category-miras">
+          <h2 class="category-title">MIRAS</h2>
+          <div class="menu-grid">
+            <article class="menu-card" data-id="prod-1790004682913" data-category="miras" data-title="jack and daniels" data-price="100000" data-img="Menu/jackdaniels.jpg" data-desc="Kesegaran Whiskey yang sangat menyegarkan" data-has-level="false" data-status="Tersedia">
+              <div class="card-info">
+                <h3 class="card-title">Jack And Daniels</h3>
+                <p class="card-desc">Kesegaran Whiskey yang sangat menyegarkan</p>
+                <p class="card-price">Rp 100.000</p>
+              </div>
+              <div class="card-img-wrapper">
+                <img src="Menu/jackdaniels.jpg" alt="Jack And Daniels" class="card-img" loading="lazy" />
+                <span class="card-add-badge" title="Pilih Menu">+</span>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -1058,7 +1077,7 @@
 
   <!-- Supabase Cloud Database & Realtime -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
-  <script src="app.js"></script>
+  <script src="supabaseClient.js?v=20260921_02"></script>
+  <script src="app.js?v=20260921_02"></script>
 </body>
 </html>

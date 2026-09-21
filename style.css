@@ -458,11 +458,15 @@ body {
 .category-tabs {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   overflow-x: auto;
+  white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 4px 0;
+  flex: 1;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .category-tabs::-webkit-scrollbar {

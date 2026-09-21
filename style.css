@@ -2382,13 +2382,14 @@ select.auth-input {
   .store-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 2px;
     width: 100%;
+    justify-content: flex-start;
   }
 
   .store-actions::-webkit-scrollbar {
@@ -2404,33 +2405,33 @@ select.auth-input {
   }
 
   .btn-auth-header {
-    padding: 7px 10px;
-    font-size: 11.5px;
-    gap: 5px;
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .btn-info {
-    padding: 7px 10px;
-    font-size: 11.5px;
-    gap: 5px;
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .btn-reservation-header {
-    padding: 7px 10px;
-    font-size: 11.5px;
-    gap: 5px;
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   /* Hide cart text in mobile: Cart button only shows cart logo and count badge */
   .btn-cart-header {
-    padding: 7px 10px;
-    gap: 5px;
+    padding: 6px 8px;
+    gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
   }

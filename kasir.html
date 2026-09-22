@@ -227,13 +227,33 @@
       <section class="kasir-orders-section">
         <div class="orders-section-header">
           <div class="filter-tabs">
-            <button type="button" class="filter-btn active" data-filter="ALL">Semua Pesanan</button>
+            <button type="button" class="filter-btn active" data-filter="ALL">Semua Pesanan (<span id="countAllFilter">0</span>)</button>
             <button type="button" class="filter-btn" data-filter="MENUNGGU_BAYAR">Menunggu Bayar (<span id="countPendingFilter">0</span>)</button>
             <button type="button" class="filter-btn" data-filter="LUNAS">Sudah Lunas (<span id="countPaidFilter">0</span>)</button>
             <button type="button" class="filter-btn" data-filter="SELESAI">Selesai (<span id="countDoneFilter">0</span>)</button>
           </div>
 
           <div class="orders-actions-right">
+            <!-- Date Scope Toggle: Hari Ini (Default) vs Semua Riwayat -->
+            <div class="date-scope-toggle" id="dateScopeToggle">
+              <button type="button" class="scope-btn active" data-scope="TODAY" id="btnScopeToday" title="Hanya tampilkan pesanan operasional hari ini">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:4px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Hari Ini</span>
+              </button>
+              <button type="button" class="scope-btn" data-scope="ALL" id="btnScopeAll" title="Tampilkan seluruh riwayat pesanan (termasuk hari-hari sebelumnya)">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:4px;">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Semua Riwayat</span>
+              </button>
+            </div>
+
             <button type="button" class="btn-refresh-feed" id="btnRefreshFeed" title="Segarkan Data">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 4 23 10 17 10"></polyline>
@@ -688,39 +708,65 @@
     </div>
   </div>
 
-  <!-- Modal Buat Reservasi Baru di Kasir -->
+  <!-- Modal Buat Pesanan / Reservasi Meja di Kasir (POS) -->
   <div class="modal-overlay" id="modalKasirNewReservation">
     <div class="modal-card modal-reservation-card">
       <div class="modal-header">
         <div class="modal-header-text">
-          <h3 class="modal-title">Input Reservasi Acara Baru (Kasir)</h3>
-          <p class="modal-subtitle">Min. belanja Rp15.000/kursi • DP Minimal 50% (Bisa Cash / Cashless)</p>
+          <h3 class="modal-title" id="posOrderModalTitle">Pesan &amp; Buka Meja (POS Kasir)</h3>
+          <p class="modal-subtitle" id="posOrderModalSubtitle">Pilih mode: Pesanan Walk-In Makan di Tempat atau Jadwal Reservasi Acara</p>
         </div>
         <button type="button" class="modal-close" id="closeKasirNewRsv">&times;</button>
       </div>
+
+      <!-- Mode Switcher: Dine-In Walk In vs Reservasi -->
+      <div class="pos-mode-switcher-wrap">
+        <div class="pos-mode-switcher" id="posModeSwitcher">
+          <button type="button" class="pos-mode-tab active" id="tabPosDineIn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              <line x1="6" y1="1" x2="6" y2="4"></line>
+              <line x1="10" y1="1" x2="10" y2="4"></line>
+              <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+            <span>🍽️ Makan di Sini (Walk-In Sekarang)</span>
+          </button>
+          <button type="button" class="pos-mode-tab" id="tabPosReservation">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>📅 Reservasi Jadwal Acara</span>
+          </button>
+        </div>
+      </div>
+
       <div class="modal-body modal-reservation-body">
         <form id="kasirRsvForm">
-          <!-- Step 1: Info Pemesan -->
+          <!-- Step 1: Info Pemesan / Tamu -->
           <div class="rsv-section">
-            <h4 class="rsv-section-title">1. Data Pemesan / Acara</h4>
+            <h4 class="rsv-section-title" id="posStep1Title">1. Data Tamu &amp; Pelanggan</h4>
             <div class="rsv-grid-2">
               <div class="auth-group">
-                <label for="kRsvCustomerName" class="auth-label">Nama Pemesan / Acara *</label>
-                <input type="text" id="kRsvCustomerName" class="auth-input" placeholder="contoh: Gathering Kantor BNI" required />
+                <label for="kRsvCustomerName" class="auth-label" id="kRsvNameLabel">Nama Tamu / Pemesan *</label>
+                <input type="text" id="kRsvCustomerName" class="auth-input" placeholder="contoh: Pak Agus / Budi" required />
               </div>
-              <div class="auth-group">
-                <label for="kRsvPhone" class="auth-label">Nomor WhatsApp / Telp *</label>
-                <input type="tel" id="kRsvPhone" class="auth-input" placeholder="contoh: 08123456789" required />
+              <div class="auth-group" id="kRsvPhoneGroup">
+                <label for="kRsvPhone" class="auth-label" id="kRsvPhoneLabel">Nomor WhatsApp / Telp</label>
+                <input type="tel" id="kRsvPhone" class="auth-input" placeholder="contoh: 08123456789" />
               </div>
             </div>
-            <div class="rsv-grid-2">
+            <div class="rsv-grid-2" id="kRsvDateTimeGroup" style="display: none;">
               <div class="auth-group">
                 <label for="kRsvDate" class="auth-label">Tanggal Reservasi *</label>
-                <input type="date" id="kRsvDate" class="auth-input" required />
+                <input type="date" id="kRsvDate" class="auth-input" />
               </div>
               <div class="auth-group">
                 <label for="kRsvTime" class="auth-label">Jam Kedatangan *</label>
-                <input type="time" id="kRsvTime" class="auth-input" min="09:00" max="21:30" required />
+                <input type="time" id="kRsvTime" class="auth-input" min="09:00" max="21:30" />
               </div>
             </div>
           </div>
@@ -728,8 +774,8 @@
           <!-- Step 2: Pilih Meja & Kursi -->
           <div class="rsv-section">
             <div class="rsv-section-header">
-              <h4 class="rsv-section-title">2. Pilih Meja & Kursi (Maks. 5 Kursi / Meja)</h4>
-              <span class="rsv-badge-hint">Bisa pilih > 1 meja</span>
+              <h4 class="rsv-section-title" id="posStep2Title">2. Pilih Meja &amp; Kursi</h4>
+              <span class="rsv-badge-hint" id="kRsvTableHint">Maks. 5 Kursi / Meja</span>
             </div>
             <div class="rsv-tables-grid" id="kRsvTablesGrid"></div>
             <div class="rsv-table-summary-bar">
@@ -740,16 +786,17 @@
               <label for="kRsvSeatsCount" class="auth-label">Jumlah Kursi Tamu *</label>
               <div class="rsv-seat-stepper">
                 <button type="button" class="btn-seat-step" id="kBtnSeatMinus">&minus;</button>
-                <input type="number" id="kRsvSeatsCount" class="auth-input rsv-seat-input" min="1" max="60" value="4" required />
+                <input type="number" id="kRsvSeatsCount" class="auth-input rsv-seat-input" min="1" max="60" value="2" required />
                 <button type="button" class="btn-seat-step" id="kBtnSeatPlus">&plus;</button>
                 <span class="seat-unit-label">Kursi Tamu</span>
               </div>
             </div>
           </div>
 
-          <!-- Step 3: Pilih Menu & Minimum Spend -->
+          <!-- Step 3: Pilih Menu Pesanan -->
           <div class="rsv-section">
-            <div class="rsv-spend-target-card">
+            <!-- Spend Target Card (Active only in Reservation Mode) -->
+            <div class="rsv-spend-target-card" id="kSpendTargetCard" style="display: none;">
               <div class="spend-target-top">
                 <div>
                   <span class="spend-target-title">Syarat Minimal Belanja:</span>
@@ -763,14 +810,41 @@
               <div class="spend-alert-msg" id="kSpendAlertMsg">Silakan pilih menu minimal senilai Rp60.000</div>
             </div>
 
-            <h4 class="rsv-section-title" style="margin-top: 14px;">3. Pilih Menu Acara</h4>
+            <div class="rsv-menu-section-head">
+              <h4 class="rsv-section-title" id="posStep3Title">3. Pilih Menu Pesanan</h4>
+              <div class="rsv-cat-filters" id="kRsvCatFilters">
+                <button type="button" class="rsv-cat-btn active" data-pos-cat="ALL">Semua</button>
+                <button type="button" class="rsv-cat-btn" data-pos-cat="MIE">Mie</button>
+                <button type="button" class="rsv-cat-btn" data-pos-cat="DIMSUM">Dimsum</button>
+                <button type="button" class="rsv-cat-btn" data-pos-cat="BEVERAGE">Minuman</button>
+              </div>
+            </div>
+
             <div class="rsv-menu-list" id="kRsvMenuList"></div>
+
+            <!-- Total Belanja Ringkasan -->
+            <div class="pos-cart-summary">
+              <div class="pos-cart-row">
+                <span>Subtotal Menu:</span>
+                <strong id="kPosSubtotalText">Rp 0</strong>
+              </div>
+              <div class="pos-cart-row">
+                <span>PB1 (Pajak Resto 10%):</span>
+                <strong id="kPosTaxText">Rp 0</strong>
+              </div>
+              <div class="pos-cart-row grand-total">
+                <span>Total Tagihan:</span>
+                <strong id="kPosGrandTotalText" style="color: #0066ff;">Rp 0</strong>
+              </div>
+            </div>
           </div>
 
-          <!-- Step 4: Opsi DP & Metode Pembayaran Kasir -->
+          <!-- Step 4: Opsi DP (Reservasi) & Metode Pembayaran Kasir -->
           <div class="rsv-section">
-            <h4 class="rsv-section-title">4. Ketentuan Pembayaran DP</h4>
-            <div class="rsv-dp-options">
+            <h4 class="rsv-section-title" id="posStep4Title">4. Ketentuan Pembayaran</h4>
+            
+            <!-- Reservation DP options (Shown only in Reservation Mode) -->
+            <div class="rsv-dp-options" id="kRsvDpOptionsWrap" style="display: none;">
               <label class="rsv-dp-card active" id="kDpOption50Label">
                 <input type="radio" name="kRsvDpOption" value="50" checked />
                 <div class="dp-card-inner">
@@ -790,26 +864,46 @@
             </div>
 
             <div class="auth-group" style="margin-top: 10px;">
-              <label class="cash-input-label">Metode Pembayaran DP di Kasir:</label>
-              <div style="display: flex; gap: 10px; margin-top: 4px;">
-                <label class="dining-radio" style="flex: 1; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <label class="cash-input-label">Metode Pembayaran di Kasir:</label>
+              <div style="display: flex; gap: 10px; margin-top: 6px;">
+                <label class="dining-radio" style="flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                   <input type="radio" name="kRsvPayMethod" value="Cash (Kasir)" checked />
-                  <span>Tunai (Cash)</span>
+                  <strong style="font-size: 13px;">Uang Tunai (Cash)</strong>
                 </label>
-                <label class="dining-radio" style="flex: 1; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <label class="dining-radio" style="flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                   <input type="radio" name="kRsvPayMethod" value="Cashless (QRIS)" />
-                  <span>Cashless (QRIS)</span>
+                  <strong style="font-size: 13px;">Cashless (QRIS / EDC)</strong>
                 </label>
+              </div>
+            </div>
+
+            <!-- Cash Payment Calculator (For Walk-In Dine In cash) -->
+            <div class="pos-cash-calculator" id="kPosCashCalcBox" style="margin-top: 12px;">
+              <label for="kPosCashGiven" class="cash-input-label">Uang Tunai Diterima dari Tamu (Rp):</label>
+              <div class="cash-input-wrap">
+                <span class="currency-prefix">Rp</span>
+                <input type="number" id="kPosCashGiven" class="cash-number-input" placeholder="Masukkan jumlah uang" min="0" step="1000" />
+              </div>
+              <div class="quick-cash-pills" id="kPosQuickCashPills"></div>
+              <div class="cash-change-box" id="kPosChangeBox" style="margin-top: 10px;">
+                <div class="change-label">Kembalian:</div>
+                <div class="change-amount" id="kPosChangeAmount">Rp 0</div>
+                <div class="change-status-msg" id="kPosChangeStatusMsg"></div>
               </div>
             </div>
           </div>
 
           <div class="rsv-footer-submit">
             <div class="rsv-total-payable">
-              <span class="rsv-payable-label">Total DP Diterima Kasir:</span>
-              <span class="rsv-payable-value" id="kRsvPayableNow">Rp0</span>
+              <span class="rsv-payable-label" id="kPosPayableLabel">Total Pembayaran:</span>
+              <span class="rsv-payable-value" id="kRsvPayableNow">Rp 0</span>
             </div>
-            <button type="submit" class="btn-kasir-primary rsv-submit-btn" id="btnSubmitKasirRsv">Simpan Reservasi & Cetak Bukti DP</button>
+            <button type="submit" class="btn-kasir-primary rsv-submit-btn" id="btnSubmitKasirRsv">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span id="btnSubmitKasirText">Buka Meja &amp; Cetak Struk</span>
+            </button>
           </div>
         </form>
       </div>

@@ -285,20 +285,134 @@ document.addEventListener('DOMContentLoaded', () => {
   const dapurTabs = document.querySelectorAll('.dapur-tab');
   const btnRefreshKds = document.getElementById('btnRefreshKds');
 
+  // Month lookup dictionary for Indonesian & English dates
+  const MONTHS_MAP = {
+    'jan': 0, 'januari': 0, 'january': 0,
+    'feb': 1, 'februari': 1, 'february': 1,
+    'mar': 2, 'maret': 2, 'march': 2,
+    'apr': 3, 'april': 3,
+    'mei': 4, 'may': 4,
+    'jun': 5, 'juni': 5, 'june': 5,
+    'jul': 6, 'juli': 6, 'july': 6,
+    'agu': 7, 'agust': 7, 'agustus': 7, 'ags': 7, 'aug': 7, 'august': 7,
+    'sep': 8, 'sept': 8, 'september': 8,
+    'okt': 9, 'oktober': 9, 'oct': 9, 'october': 9,
+    'nov': 10, 'november': 10,
+    'des': 11, 'desember': 11, 'dec': 11, 'december': 11
+  };
+
+  const parseOrderDate = (order) => {
+    if (!order) return new Date(0);
+
+    // 1. Check numeric timestamp property
+    if (order.timestamp && !isNaN(Number(order.timestamp))) {
+      const ts = Number(order.timestamp);
+      if (ts > 1000000000000) return new Date(ts);
+      if (ts > 1000000000) return new Date(ts * 1000);
+    }
+
+    // 2. Parse createdAt if available
+    if (order.createdAt) {
+      const raw = String(order.createdAt).trim();
+
+      // Native ISO check
+      const nativeD = new Date(raw);
+      if (!isNaN(nativeD.getTime()) && nativeD.getFullYear() > 2000 && !raw.includes('/')) {
+        return nativeD;
+      }
+
+      // Convert time with dot "22.54" or "22.54.00" to colon "22:54"
+      const normalized = raw.replace(/(\d{1,2})\.(\d{2})(?:\.(\d{2}))?/, (m, h, min, s) => s ? `${h}:${min}:${s}` : `${h}:${min}`);
+
+      const normD = new Date(normalized);
+      if (!isNaN(normD.getTime()) && normD.getFullYear() > 2000 && !normalized.includes('/')) {
+        return normD;
+      }
+
+      // Handle Slash format: "21/09/2026 22:54" or "21/9/2026"
+      const slashMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+      if (slashMatch) {
+        const day = parseInt(slashMatch[1], 10);
+        const month = parseInt(slashMatch[2], 10) - 1;
+        const year = parseInt(slashMatch[3], 10);
+        const hour = slashMatch[4] ? parseInt(slashMatch[4], 10) : 0;
+        const minute = slashMatch[5] ? parseInt(slashMatch[5], 10) : 0;
+        const sec = slashMatch[6] ? parseInt(slashMatch[6], 10) : 0;
+        const d = new Date(year, month, day, hour, minute, sec);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Handle Indonesian / Text format: "21 Sep 2026 22.54" or "21 September 2026, 22:54"
+      const textMatch = normalized.match(/^(\d{1,2})[\s\-]+([A-Za-z]+)[\s\-]+(\d{4})(?:[\s,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+      if (textMatch) {
+        const day = parseInt(textMatch[1], 10);
+        const monthKey = textMatch[2].toLowerCase().trim();
+        const year = parseInt(textMatch[3], 10);
+        const month = MONTHS_MAP[monthKey] !== undefined ? MONTHS_MAP[monthKey] : -1;
+        const hour = textMatch[4] ? parseInt(textMatch[4], 10) : 0;
+        const minute = textMatch[5] ? parseInt(textMatch[5], 10) : 0;
+        const sec = textMatch[6] ? parseInt(textMatch[6], 10) : 0;
+        if (month !== -1) {
+          const d = new Date(year, month, day, hour, minute, sec);
+          if (!isNaN(d.getTime())) return d;
+        }
+      }
+
+      // Handle "YYYY-MM-DD"
+      const isoMatch = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (isoMatch) {
+        const year = parseInt(isoMatch[1], 10);
+        const month = parseInt(isoMatch[2], 10) - 1;
+        const day = parseInt(isoMatch[3], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+
+    // 3. Fallback: Check if orderId contains timestamp
+    const idMatch = String(order.orderId || '').match(/(\d{12,13})/);
+    if (idMatch) {
+      const ts = Number(idMatch[1]);
+      if (!isNaN(ts) && ts > 1000000000000) {
+        return new Date(ts);
+      }
+    }
+
+    // Never fallback to new Date(), otherwise old orders evaluate as today
+    return new Date(0);
+  };
+
+  const isSameDay = (d1, d2) => {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+  };
+
   function renderKitchenKDS() {
     const orders = getOrders();
+    const now = new Date();
+
+    // Filter today's orders for Kitchen KDS (or active checked-in reservations)
+    const todayOrders = orders.filter(o => {
+      const isRsv = o.diningType === 'RESERVASI' || String(o.orderId || '').startsWith('RSV-') || String(o.queueNumber || '').startsWith('RSV-');
+      if (isRsv) {
+        const isTodayRsv = o.eventDate && isSameDay(new Date(o.eventDate), now);
+        return isTodayRsv || o.status === 'CHECK-IN' || o.status === 'DIPROSES';
+      }
+      return isSameDay(parseOrderDate(o), now);
+    });
 
     // Only orders that are PAID, IN-PROGRESS (DIPROSES / SEDANG_DIMASAK / CHECK-IN) or DONE appear in kitchen
-    const paidOrders = orders.filter(o => {
+    const paidOrders = todayOrders.filter(o => {
       const isRsv = o.diningType === 'RESERVASI' || String(o.orderId || '').startsWith('RSV-') || String(o.queueNumber || '').startsWith('RSV-');
       if (isRsv) {
         return o.status === 'DP_LUNAS' || o.status === 'LUNAS' || o.status === 'CHECK-IN' || o.status === 'DIPROSES';
       }
       return o.status === 'LUNAS' || o.status === 'DIPROSES';
     });
-    const cookingOrders = orders.filter(o => o.status === 'SEDANG_DIMASAK');
-    const readyOrders = orders.filter(o => o.status === 'SIAP_SAJI');
-    const doneOrders = orders.filter(o => o.status === 'SIAP_SAJI' || o.status === 'SELESAI');
+    const cookingOrders = todayOrders.filter(o => o.status === 'SEDANG_DIMASAK');
+    const readyOrders = todayOrders.filter(o => o.status === 'SIAP_SAJI');
+    const doneOrders = todayOrders.filter(o => o.status === 'SIAP_SAJI' || o.status === 'SELESAI');
     const activeOrders = [...paidOrders, ...cookingOrders, ...readyOrders];
 
     statPendingKitchen.textContent = paidOrders.length;

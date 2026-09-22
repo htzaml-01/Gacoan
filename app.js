@@ -1540,9 +1540,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedPayRadio = document.querySelector('input[name="payment_method"]:checked');
     const paymentMethod = selectedPayRadio ? selectedPayRadio.value : 'Cashless';
 
-    // Calculate queue number
+    // Calculate queue number (resets daily at 00:00 midnight)
     const allOrders = getAllOrders();
-    const todayOrdersCount = allOrders.length + 1;
+    const today = new Date();
+    const todayOrdersCount = allOrders.filter(o => {
+      const d = new Date(o.timestamp || o.createdAt);
+      return !isNaN(d.getTime()) && d.toDateString() === today.toDateString() && o.diningType !== 'RESERVASI';
+    }).length + 1;
     const queueNumber = `A-${String(todayOrdersCount).padStart(3, '0')}`;
     const orderId = 'ORD-' + Date.now();
 

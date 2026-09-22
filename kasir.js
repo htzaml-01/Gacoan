@@ -205,35 +205,102 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'Rp ' + Number(num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
+  // Month lookup dictionary for Indonesian & English dates
+  const MONTHS_MAP = {
+    'jan': 0, 'januari': 0, 'january': 0,
+    'feb': 1, 'februari': 1, 'february': 1,
+    'mar': 2, 'maret': 2, 'march': 2,
+    'apr': 3, 'april': 3,
+    'mei': 4, 'may': 4,
+    'jun': 5, 'juni': 5, 'june': 5,
+    'jul': 6, 'juli': 6, 'july': 6,
+    'agu': 7, 'agust': 7, 'agustus': 7, 'ags': 7, 'aug': 7, 'august': 7,
+    'sep': 8, 'sept': 8, 'september': 8,
+    'okt': 9, 'oktober': 9, 'oct': 9, 'october': 9,
+    'nov': 10, 'november': 10,
+    'des': 11, 'desember': 11, 'dec': 11, 'december': 11
+  };
+
   // Date Parsing & Comparison Helpers
   const parseOrderDate = (order) => {
     if (!order) return new Date(0);
+
+    // 1. Check numeric timestamp property
     if (order.timestamp && !isNaN(Number(order.timestamp))) {
-      return new Date(Number(order.timestamp));
+      const ts = Number(order.timestamp);
+      if (ts > 1000000000000) return new Date(ts);
+      if (ts > 1000000000) return new Date(ts * 1000);
     }
+
+    // 2. Parse createdAt if available
     if (order.createdAt) {
-      const d = new Date(order.createdAt);
-      if (!isNaN(d.getTime())) return d;
       const raw = String(order.createdAt).trim();
-      const parts = raw.split(/[\s,]+/);
-      if (parts[0] && parts[0].includes('/')) {
-        const dp = parts[0].split('/');
-        if (dp.length === 3) {
-          const day = parseInt(dp[0], 10);
-          const month = parseInt(dp[1], 10) - 1;
-          const year = parseInt(dp[2], 10);
-          let h = 0, m = 0;
-          if (parts[1] && parts[1].includes(':')) {
-            const tp = parts[1].split(':');
-            h = parseInt(tp[0], 10) || 0;
-            m = parseInt(tp[1], 10) || 0;
-          }
-          const parsed = new Date(year, month, day, h, m);
-          if (!isNaN(parsed.getTime())) return parsed;
+
+      // Native ISO check
+      const nativeD = new Date(raw);
+      if (!isNaN(nativeD.getTime()) && nativeD.getFullYear() > 2000 && !raw.includes('/')) {
+        return nativeD;
+      }
+
+      // Convert time with dot "22.54" or "22.54.00" to colon "22:54"
+      const normalized = raw.replace(/(\d{1,2})\.(\d{2})(?:\.(\d{2}))?/, (m, h, min, s) => s ? `${h}:${min}:${s}` : `${h}:${min}`);
+
+      const normD = new Date(normalized);
+      if (!isNaN(normD.getTime()) && normD.getFullYear() > 2000 && !normalized.includes('/')) {
+        return normD;
+      }
+
+      // Handle Slash format: "21/09/2026 22:54" or "21/9/2026"
+      const slashMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+      if (slashMatch) {
+        const day = parseInt(slashMatch[1], 10);
+        const month = parseInt(slashMatch[2], 10) - 1;
+        const year = parseInt(slashMatch[3], 10);
+        const hour = slashMatch[4] ? parseInt(slashMatch[4], 10) : 0;
+        const minute = slashMatch[5] ? parseInt(slashMatch[5], 10) : 0;
+        const sec = slashMatch[6] ? parseInt(slashMatch[6], 10) : 0;
+        const d = new Date(year, month, day, hour, minute, sec);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Handle Indonesian / Text format: "21 Sep 2026 22.54" or "21 September 2026, 22:54"
+      const textMatch = normalized.match(/^(\d{1,2})[\s\-]+([A-Za-z]+)[\s\-]+(\d{4})(?:[\s,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+      if (textMatch) {
+        const day = parseInt(textMatch[1], 10);
+        const monthKey = textMatch[2].toLowerCase().trim();
+        const year = parseInt(textMatch[3], 10);
+        const month = MONTHS_MAP[monthKey] !== undefined ? MONTHS_MAP[monthKey] : -1;
+        const hour = textMatch[4] ? parseInt(textMatch[4], 10) : 0;
+        const minute = textMatch[5] ? parseInt(textMatch[5], 10) : 0;
+        const sec = textMatch[6] ? parseInt(textMatch[6], 10) : 0;
+        if (month !== -1) {
+          const d = new Date(year, month, day, hour, minute, sec);
+          if (!isNaN(d.getTime())) return d;
         }
       }
+
+      // Handle "YYYY-MM-DD"
+      const isoMatch = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (isoMatch) {
+        const year = parseInt(isoMatch[1], 10);
+        const month = parseInt(isoMatch[2], 10) - 1;
+        const day = parseInt(isoMatch[3], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) return d;
+      }
     }
-    return new Date();
+
+    // 3. Fallback: Check if orderId contains timestamp
+    const idMatch = String(order.orderId || '').match(/(\d{12,13})/);
+    if (idMatch) {
+      const ts = Number(idMatch[1]);
+      if (!isNaN(ts) && ts > 1000000000000) {
+        return new Date(ts);
+      }
+    }
+
+    // Never fallback to new Date(), otherwise old orders evaluate as today
+    return new Date(0);
   };
 
   const isSameDay = (d1, d2) => {
@@ -732,9 +799,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const statPendingOrders = document.getElementById('statPendingOrders');
   const statPaidOrders = document.getElementById('statPaidOrders');
   const statTotalRevenue = document.getElementById('statTotalRevenue');
+  const countAllFilter = document.getElementById('countAllFilter');
   const countPendingFilter = document.getElementById('countPendingFilter');
   const countPaidFilter = document.getElementById('countPaidFilter');
   const countDoneFilter = document.getElementById('countDoneFilter');
+
+  const btnScopeToday = document.getElementById('btnScopeToday');
+  const btnScopeAll = document.getElementById('btnScopeAll');
 
   const ordersGrid = document.getElementById('ordersGrid');
   const filterBtns = document.querySelectorAll('.filter-btn');
@@ -742,6 +813,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClearSearch = document.getElementById('btnClearSearch');
   const btnRefreshFeed = document.getElementById('btnRefreshFeed');
   const btnClearOrdersDB = document.getElementById('btnClearOrdersDB');
+
+  let currentDateScope = 'TODAY'; // 'TODAY' (default: reset queue on new day) | 'ALL' (view all history)
+
+  if (btnScopeToday) {
+    btnScopeToday.addEventListener('click', () => {
+      currentDateScope = 'TODAY';
+      btnScopeToday.classList.add('active');
+      if (btnScopeAll) btnScopeAll.classList.remove('active');
+      renderDashboard();
+    });
+  }
+  if (btnScopeAll) {
+    btnScopeAll.addEventListener('click', () => {
+      currentDateScope = 'ALL';
+      btnScopeAll.classList.add('active');
+      if (btnScopeToday) btnScopeToday.classList.remove('active');
+      renderDashboard();
+    });
+  }
 
   // Receipt Modal DOM
   const receiptModal = document.getElementById('receiptModal');
@@ -780,12 +870,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statPaidOrders) statPaidOrders.textContent = paidCount;
     if (statTotalRevenue) statTotalRevenue.textContent = formatRp(totalRevenue);
 
-    if (countPendingFilter) countPendingFilter.textContent = pendingCount;
-    if (countPaidFilter) countPaidFilter.textContent = paidCount;
-    if (countDoneFilter) countDoneFilter.textContent = doneCount;
+    // 2. Base list for active queue depends on Date Scope (Default: TODAY)
+    const baseList = (currentDateScope === 'TODAY') ? todayOrders : orders;
 
-    // 2. Filter Orders
-    let filtered = [...orders].reverse(); // Newest first
+    // Filter pill counters match the active scope
+    const scopeTotal = baseList.length;
+    const scopePending = baseList.filter(o => o.status === 'MENUNGGU_BAYAR').length;
+    const scopePaid = baseList.filter(o => o.status === 'LUNAS' || o.status === 'SEDANG_DIMASAK' || o.status === 'SIAP_SAJI' || o.status === 'SELESAI' || o.status === 'DP_LUNAS' || o.status === 'CHECK-IN' || o.status === 'DIPROSES').length;
+    const scopeDone = baseList.filter(o => o.status === 'SELESAI').length;
+
+    if (countAllFilter) countAllFilter.textContent = scopeTotal;
+    if (countPendingFilter) countPendingFilter.textContent = scopePending;
+    if (countPaidFilter) countPaidFilter.textContent = scopePaid;
+    if (countDoneFilter) countDoneFilter.textContent = scopeDone;
+
+    // 3. Filter Orders by Status & Search Query
+    let filtered = [...baseList].reverse(); // Newest first
 
     if (currentFilter !== 'ALL') {
       if (currentFilter === 'LUNAS') {
@@ -806,8 +906,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 3. Render Cards
+    // 4. Render Cards
     if (filtered.length === 0) {
+      const emptyTitle = currentDateScope === 'TODAY' ? 'Belum ada antrian pesanan hari ini' : 'Tidak ada pesanan yang cocok';
+      const emptyDesc = currentDateScope === 'TODAY'
+        ? 'Pesanan hari ini akan otomatis muncul di sini. Riwayat pesanan kemarin tersimpan aman 100% di menu Data Penjualan.'
+        : 'Silakan gunakan tombol filter atau cari nomor antrian lain.';
+
       ordersGrid.innerHTML = `
         <div class="orders-empty-state">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 12px auto; display: block;">
@@ -815,8 +920,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <line x1="8" y1="21" x2="16" y2="21"></line>
             <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">Tidak ada pesanan yang cocok</h4>
-          <p style="font-size: 13px; color: #64748b; margin-top: 4px;">Pesanan baru dari web pembeli akan otomatis muncul di sini secara langsung.</p>
+          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">${emptyTitle}</h4>
+          <p style="font-size: 13px; color: #64748b; margin-top: 4px;">${emptyDesc}</p>
         </div>
       `;
       return;
@@ -1205,9 +1310,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="table-occupant-info" style="color: #64748b; text-align: center; padding: 16px 0;">
             <span>Siap digunakan untuk pelanggan walk-in atau reservasi.</span>
           </div>
-          <div class="table-actions-row">
-            <button type="button" class="btn-table-action primary" data-action="new-order-table" data-table="${tableNo}">
+          <div class="table-actions-row" style="display: flex; gap: 8px;">
+            <button type="button" class="btn-table-action primary" data-action="new-order-table" data-table="${tableNo}" style="flex: 1.3;" title="Pesan Makan di Meja Ini Sekarang">
               <span>+ Pesan Meja Ini</span>
+            </button>
+            <button type="button" class="btn-table-action" data-action="reserve-table" data-table="${tableNo}" style="flex: 1; background: #f8fafc; border-color: #cbd5e1; color: #334155;" title="Booking Jadwal Reservasi Meja Ini">
+              <span>Reservasi</span>
             </button>
           </div>
         `}
@@ -1226,8 +1334,10 @@ document.addEventListener('DOMContentLoaded', () => {
             handleOrderAction('print-receipt', orderId);
           } else if (action === 'checkin-rsv' && orderId) {
             checkInReservation(orderId);
-          } else if (action === 'new-order-table') {
-            setActiveKasirView('orders');
+          } else if (action === 'new-order-table' && tNo) {
+            openKasirOrderModal(tNo, 'DINE_IN');
+          } else if (action === 'reserve-table' && tNo) {
+            openKasirOrderModal(tNo, 'RESERVATION');
           }
         });
       });
@@ -1604,43 +1714,164 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================================================
-  // CASHIER NEW RESERVATION FORM MODAL MODULE
+  // CASHIER POS ORDER & RESERVATION FORM MODAL MODULE
   // ==========================================================================
   const modalKasirNewReservation = document.getElementById('modalKasirNewReservation');
   const btnKasirNewRsv = document.getElementById('btnKasirNewRsv');
   const closeKasirNewRsv = document.getElementById('closeKasirNewRsv');
   const kasirRsvForm = document.getElementById('kasirRsvForm');
 
+  const posOrderModalTitle = document.getElementById('posOrderModalTitle');
+  const posOrderModalSubtitle = document.getElementById('posOrderModalSubtitle');
+  const tabPosDineIn = document.getElementById('tabPosDineIn');
+  const tabPosReservation = document.getElementById('tabPosReservation');
+  const posStep1Title = document.getElementById('posStep1Title');
+  const posStep2Title = document.getElementById('posStep2Title');
+  const posStep3Title = document.getElementById('posStep3Title');
+  const posStep4Title = document.getElementById('posStep4Title');
+
   const kRsvCustomerName = document.getElementById('kRsvCustomerName');
+  const kRsvNameLabel = document.getElementById('kRsvNameLabel');
   const kRsvPhone = document.getElementById('kRsvPhone');
+  const kRsvPhoneGroup = document.getElementById('kRsvPhoneGroup');
+  const kRsvPhoneLabel = document.getElementById('kRsvPhoneLabel');
+  const kRsvDateTimeGroup = document.getElementById('kRsvDateTimeGroup');
   const kRsvDate = document.getElementById('kRsvDate');
   const kRsvTime = document.getElementById('kRsvTime');
+
   const kRsvTablesGrid = document.getElementById('kRsvTablesGrid');
   const kRsvSelectedTablesText = document.getElementById('kRsvSelectedTablesText');
   const kRsvMaxCapacityText = document.getElementById('kRsvMaxCapacityText');
+  const kRsvTableHint = document.getElementById('kRsvTableHint');
   const kRsvSeatsCount = document.getElementById('kRsvSeatsCount');
   const kBtnSeatMinus = document.getElementById('kBtnSeatMinus');
   const kBtnSeatPlus = document.getElementById('kBtnSeatPlus');
+
+  const kSpendTargetCard = document.getElementById('kSpendTargetCard');
   const kRsvSeatMultiplier = document.getElementById('kRsvSeatMultiplier');
   const kRsvMinSpendAmount = document.getElementById('kRsvMinSpendAmount');
   const kRsvCurrentMenuTotal = document.getElementById('kRsvCurrentMenuTotal');
   const kSpendAlertMsg = document.getElementById('kSpendAlertMsg');
-  const kRsvMenuList = document.getElementById('kRsvMenuList');
 
+  const kRsvCatFilters = document.getElementById('kRsvCatFilters');
+  const kRsvMenuList = document.getElementById('kRsvMenuList');
+  const kPosSubtotalText = document.getElementById('kPosSubtotalText');
+  const kPosTaxText = document.getElementById('kPosTaxText');
+  const kPosGrandTotalText = document.getElementById('kPosGrandTotalText');
+
+  const kRsvDpOptionsWrap = document.getElementById('kRsvDpOptionsWrap');
   const kDpOption50Label = document.getElementById('kDpOption50Label');
   const kDpOption100Label = document.getElementById('kDpOption100Label');
   const kRsvDp50Amount = document.getElementById('kRsvDp50Amount');
   const kRsvDp50Remain = document.getElementById('kRsvDp50Remain');
   const kRsvDp100Amount = document.getElementById('kRsvDp100Amount');
-  const kRsvPayableNow = document.getElementById('kRsvPayableNow');
 
+  const kPosCashCalcBox = document.getElementById('kPosCashCalcBox');
+  const kPosCashGiven = document.getElementById('kPosCashGiven');
+  const kPosQuickCashPills = document.getElementById('kPosQuickCashPills');
+  const kPosChangeBox = document.getElementById('kPosChangeBox');
+  const kPosChangeAmount = document.getElementById('kPosChangeAmount');
+  const kPosChangeStatusMsg = document.getElementById('kPosChangeStatusMsg');
+
+  const kPosPayableLabel = document.getElementById('kPosPayableLabel');
+  const kRsvPayableNow = document.getElementById('kRsvPayableNow');
+  const btnSubmitKasirRsv = document.getElementById('btnSubmitKasirRsv');
+  const btnSubmitKasirText = document.getElementById('btnSubmitKasirText');
+
+  let kCurrentOrderMode = 'DINE_IN'; // 'DINE_IN' | 'RESERVATION'
   let kSelectedTables = ['Meja 01'];
-  let kMenuSelections = {};
+  let kMenuSelections = {}; // id -> { qty, level, notes }
+  let kMenuCategoryFilter = 'ALL';
+
+  function setModalOrderMode(mode) {
+    kCurrentOrderMode = mode;
+    const isDineIn = mode === 'DINE_IN';
+
+    if (tabPosDineIn) {
+      if (isDineIn) tabPosDineIn.classList.add('active');
+      else tabPosDineIn.classList.remove('active');
+    }
+    if (tabPosReservation) {
+      if (!isDineIn) tabPosReservation.classList.add('active');
+      else tabPosReservation.classList.remove('active');
+    }
+
+    if (posOrderModalTitle) {
+      posOrderModalTitle.textContent = isDineIn
+        ? `Pesan Dine-In & Buka Meja (${kSelectedTables.join(', ')})`
+        : 'Input Reservasi Acara Baru (Kasir)';
+    }
+    if (posOrderModalSubtitle) {
+      posOrderModalSubtitle.textContent = isDineIn
+        ? 'Pesanan tamu makan di tempat langsung di kasir (Masuk KDS Dapur & Cetak Struk)'
+        : 'Min. belanja Rp15.000/kursi • DP Minimal 50% (Bisa Cash / Cashless)';
+    }
+
+    if (posStep1Title) posStep1Title.textContent = isDineIn ? '1. Data Tamu & Pelanggan' : '1. Data Pemesan / Acara';
+    if (kRsvNameLabel) kRsvNameLabel.textContent = isDineIn ? 'Nama Tamu / Pelanggan *' : 'Nama Pemesan / Acara *';
+    if (kRsvPhoneLabel) kRsvPhoneLabel.textContent = isDineIn ? 'Nomor WhatsApp (Opsional)' : 'Nomor WhatsApp / Telp *';
+    if (kRsvDateTimeGroup) kRsvDateTimeGroup.style.display = isDineIn ? 'none' : 'grid';
+
+    if (posStep2Title) posStep2Title.textContent = isDineIn ? '2. Nomor Meja Resto' : '2. Pilih Meja & Kursi (Maks. 5 Kursi / Meja)';
+    if (kRsvTableHint) kRsvTableHint.textContent = isDineIn ? 'Meja Aktif Terpilih' : 'Bisa pilih > 1 meja';
+
+    if (kSpendTargetCard) kSpendTargetCard.style.display = isDineIn ? 'none' : 'block';
+    if (posStep3Title) posStep3Title.textContent = isDineIn ? '3. Pilih Menu Pesanan' : '3. Pilih Menu Acara';
+    if (posStep4Title) posStep4Title.textContent = isDineIn ? '4. Pembayaran Kasir' : '4. Ketentuan Pembayaran DP';
+    if (kRsvDpOptionsWrap) kRsvDpOptionsWrap.style.display = isDineIn ? 'none' : 'grid';
+
+    if (kPosPayableLabel) kPosPayableLabel.textContent = isDineIn ? 'Total Pembayaran:' : 'Total DP Diterima Kasir:';
+    if (btnSubmitKasirText) btnSubmitKasirText.textContent = isDineIn ? 'Konfirmasi Bayar & Buka Meja (Cetak Struk)' : 'Simpan Reservasi & Cetak Bukti DP';
+
+    renderKasirTableSelection();
+    updateKasirRsvCalculations();
+  }
+
+  function openKasirOrderModal(tableNo, mode = 'DINE_IN') {
+    if (tableNo) {
+      kSelectedTables = [tableNo];
+    } else if (kSelectedTables.length === 0) {
+      kSelectedTables = ['Meja 01'];
+    }
+    kMenuSelections = {};
+    kMenuCategoryFilter = 'ALL';
+
+    if (kRsvCustomerName) {
+      kRsvCustomerName.value = mode === 'DINE_IN' ? `Tamu ${kSelectedTables.join(', ')}` : '';
+    }
+    if (kRsvPhone) kRsvPhone.value = '';
+    if (kPosCashGiven) kPosCashGiven.value = '';
+
+    const today = new Date();
+    if (kRsvDate) {
+      kRsvDate.min = today.toISOString().split('T')[0];
+      if (mode === 'DINE_IN') {
+        kRsvDate.value = today.toISOString().split('T')[0];
+      } else {
+        const tmr = new Date(today);
+        tmr.setDate(tmr.getDate() + 1);
+        kRsvDate.value = tmr.toISOString().split('T')[0];
+      }
+    }
+    if (kRsvTime) {
+      const hours = String(today.getHours()).padStart(2, '0');
+      const mins = String(today.getMinutes()).padStart(2, '0');
+      kRsvTime.value = mode === 'DINE_IN' ? `${hours}:${mins}` : '18:00';
+    }
+
+    setModalOrderMode(mode);
+    renderKasirMenuList();
+
+    if (modalKasirNewReservation) modalKasirNewReservation.classList.add('active');
+  }
+
+  if (tabPosDineIn) tabPosDineIn.addEventListener('click', () => setModalOrderMode('DINE_IN'));
+  if (tabPosReservation) tabPosReservation.addEventListener('click', () => setModalOrderMode('RESERVATION'));
 
   function getKasirBookedTablesForDate(selectedDate) {
     const booked = new Set();
     if (!selectedDate) return booked;
-    const allOrders = getAllOrders();
+    const allOrders = getOrders();
     allOrders.forEach(o => {
       const isRsv = o.diningType === 'RESERVASI' || (o.orderId && o.orderId.startsWith('RSV-')) || (o.reservationId && String(o.reservationId).startsWith('RSV-'));
       const isNotCancelled = o.status !== 'BATAL' && o.status !== 'CANCELLED';
@@ -1658,27 +1889,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (kRsvDate) {
-    const today = new Date();
-    kRsvDate.min = today.toISOString().split('T')[0];
-    const tmr = new Date(today);
-    tmr.setDate(tmr.getDate() + 1);
-    kRsvDate.value = tmr.toISOString().split('T')[0];
-
     kRsvDate.addEventListener('change', () => {
       renderKasirTableSelection();
       updateKasirRsvCalculations();
     });
   }
-  if (kRsvTime) kRsvTime.value = '18:00';
 
   if (btnKasirNewRsv) {
     btnKasirNewRsv.addEventListener('click', () => {
-      kSelectedTables = ['Meja 01'];
-      kMenuSelections = {};
-      renderKasirTableSelection();
-      renderKasirMenuList();
-      updateKasirRsvCalculations();
-      modalKasirNewReservation.classList.add('active');
+      openKasirOrderModal('Meja 01', 'RESERVATION');
     });
   }
 
@@ -1690,22 +1909,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const selectedDate = kRsvDate ? kRsvDate.value : '';
     const bookedTables = getKasirBookedTablesForDate(selectedDate);
+    const isDineIn = kCurrentOrderMode === 'DINE_IN';
 
-    kSelectedTables = kSelectedTables.filter(t => !bookedTables.has(t));
-    if (kSelectedTables.length === 0) {
-      for (let i = 1; i <= 12; i++) {
-        const tNo = `Meja ${String(i).padStart(2, '0')}`;
-        if (!bookedTables.has(tNo)) {
-          kSelectedTables = [tNo];
-          break;
+    if (!isDineIn) {
+      kSelectedTables = kSelectedTables.filter(t => !bookedTables.has(t));
+      if (kSelectedTables.length === 0) {
+        for (let i = 1; i <= 12; i++) {
+          const tNo = `Meja ${String(i).padStart(2, '0')}`;
+          if (!bookedTables.has(tNo)) {
+            kSelectedTables = [tNo];
+            break;
+          }
         }
       }
     }
 
     for (let i = 1; i <= 12; i++) {
       const tableNo = `Meja ${String(i).padStart(2, '0')}`;
-      const isBooked = bookedTables.has(tableNo);
-      const isSelected = !isBooked && kSelectedTables.includes(tableNo);
+      const isBooked = !isDineIn && bookedTables.has(tableNo);
+      const isSelected = kSelectedTables.includes(tableNo);
 
       const el = document.createElement('div');
       el.className = `rsv-table-card ${isBooked ? 'booked disabled' : ''} ${isSelected ? 'selected' : ''}`;
@@ -1717,10 +1939,22 @@ document.addEventListener('DOMContentLoaded', () => {
         el.innerHTML = `<span class="table-no-label">${tableNo}</span><span class="table-cap-label">Maks 5 Kursi</span>`;
 
         el.addEventListener('click', () => {
-          if (kSelectedTables.includes(tableNo)) {
-            if (kSelectedTables.length > 1) kSelectedTables = kSelectedTables.filter(t => t !== tableNo);
+          if (isDineIn) {
+            // Dine-in single table selection
+            kSelectedTables = [tableNo];
+            if (kRsvCustomerName && kRsvCustomerName.value.startsWith('Tamu Meja')) {
+              kRsvCustomerName.value = `Tamu ${tableNo}`;
+            }
           } else {
-            kSelectedTables.push(tableNo);
+            // Reservation multi-table selection
+            if (kSelectedTables.includes(tableNo)) {
+              if (kSelectedTables.length > 1) kSelectedTables = kSelectedTables.filter(t => t !== tableNo);
+            } else {
+              kSelectedTables.push(tableNo);
+            }
+          }
+          if (posOrderModalTitle && isDineIn) {
+            posOrderModalTitle.textContent = `Pesan Dine-In & Buka Meja (${kSelectedTables.join(', ')})`;
           }
           renderKasirTableSelection();
           updateKasirRsvCalculations();
@@ -1746,7 +1980,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (kBtnSeatPlus && kRsvSeatsCount) {
     kBtnSeatPlus.addEventListener('click', () => {
       let val = parseInt(kRsvSeatsCount.value) || 1;
-      if (val < kSelectedTables.length * 5) {
+      const maxCap = Math.max(5, kSelectedTables.length * 5);
+      if (val < maxCap) {
         kRsvSeatsCount.value = val + 1;
         updateKasirRsvCalculations();
       }
@@ -1755,41 +1990,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (kRsvSeatsCount) kRsvSeatsCount.addEventListener('input', updateKasirRsvCalculations);
 
+  if (kRsvCatFilters) {
+    kRsvCatFilters.querySelectorAll('.rsv-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        kRsvCatFilters.querySelectorAll('.rsv-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        kMenuCategoryFilter = btn.getAttribute('data-pos-cat') || 'ALL';
+        renderKasirMenuList();
+      });
+    });
+  }
+
   function renderKasirMenuList() {
     if (!kRsvMenuList) return;
     const prods = getProducts();
     kRsvMenuList.innerHTML = '';
-    prods.forEach(p => {
-      const qty = kMenuSelections[p.id] || 0;
+
+    const filtered = kMenuCategoryFilter === 'ALL'
+      ? prods
+      : prods.filter(p => (p.category || '').toUpperCase() === kMenuCategoryFilter);
+
+    if (filtered.length === 0) {
+      kRsvMenuList.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada menu pada kategori ini.</div>';
+      return;
+    }
+
+    filtered.forEach(p => {
+      const cur = kMenuSelections[p.id] || { qty: 0, level: 'LEVEL 1', notes: '' };
+      const qty = cur.qty;
+      const isMie = (p.category || '').toUpperCase() === 'MIE' || p.title.toLowerCase().includes('mie');
+
       const el = document.createElement('div');
       el.className = 'rsv-menu-item';
       el.innerHTML = `
-        <img src="${p.img || 'Menu/mie gacoan.webp'}" alt="${p.title}" class="rsv-menu-thumb" />
+        <img src="${p.img || 'Menu/mie gacoan.webp'}" alt="${p.title}" class="rsv-menu-thumb" onerror="this.src='asset/logo.png'" />
         <div class="rsv-menu-details">
           <div class="rsv-menu-name">${p.title}</div>
           <div class="rsv-menu-price">${formatRp(p.price)}</div>
         </div>
-        <div class="rsv-menu-qty-ctrl">
-          <button type="button" class="btn-rsv-qty minus-btn" ${qty === 0 ? 'disabled' : ''}>&minus;</button>
-          <span class="rsv-qty-val">${qty}</span>
-          <button type="button" class="btn-rsv-qty plus-btn">&plus;</button>
+        <div class="rsv-menu-controls">
+          ${isMie && qty > 0 ? `
+            <select class="rsv-level-select" title="Pilih Level Pedas">
+              <option value="LEVEL 0" ${cur.level === 'LEVEL 0' ? 'selected' : ''}>Lvl 0 (Ori)</option>
+              <option value="LEVEL 1" ${cur.level === 'LEVEL 1' ? 'selected' : ''}>Lvl 1</option>
+              <option value="LEVEL 2" ${cur.level === 'LEVEL 2' ? 'selected' : ''}>Lvl 2</option>
+              <option value="LEVEL 3" ${cur.level === 'LEVEL 3' ? 'selected' : ''}>Lvl 3</option>
+              <option value="LEVEL 4" ${cur.level === 'LEVEL 4' ? 'selected' : ''}>Lvl 4</option>
+              <option value="LEVEL 6" ${cur.level === 'LEVEL 6' ? 'selected' : ''}>Lvl 6</option>
+              <option value="LEVEL 8" ${cur.level === 'LEVEL 8' ? 'selected' : ''}>Lvl 8</option>
+            </select>
+          ` : ''}
+          ${qty > 0 ? `
+            <input type="text" class="rsv-notes-input" placeholder="Catatan..." value="${cur.notes || ''}" title="Catatan Masakan" />
+          ` : ''}
+          <div class="rsv-menu-qty-ctrl">
+            <button type="button" class="btn-rsv-qty minus-btn" ${qty === 0 ? 'disabled' : ''}>&minus;</button>
+            <span class="rsv-qty-val">${qty}</span>
+            <button type="button" class="btn-rsv-qty plus-btn">&plus;</button>
+          </div>
         </div>
       `;
 
       el.querySelector('.minus-btn').addEventListener('click', () => {
-        if (kMenuSelections[p.id] > 0) {
-          kMenuSelections[p.id]--;
-          if (kMenuSelections[p.id] === 0) delete kMenuSelections[p.id];
+        if (kMenuSelections[p.id] && kMenuSelections[p.id].qty > 0) {
+          kMenuSelections[p.id].qty--;
+          if (kMenuSelections[p.id].qty === 0) delete kMenuSelections[p.id];
           renderKasirMenuList();
           updateKasirRsvCalculations();
         }
       });
 
       el.querySelector('.plus-btn').addEventListener('click', () => {
-        kMenuSelections[p.id] = (kMenuSelections[p.id] || 0) + 1;
+        if (!kMenuSelections[p.id]) {
+          kMenuSelections[p.id] = { qty: 1, level: isMie ? 'LEVEL 1' : null, notes: '' };
+        } else {
+          kMenuSelections[p.id].qty++;
+        }
         renderKasirMenuList();
         updateKasirRsvCalculations();
       });
+
+      const lvlSelect = el.querySelector('.rsv-level-select');
+      if (lvlSelect) {
+        lvlSelect.addEventListener('change', (e) => {
+          if (kMenuSelections[p.id]) {
+            kMenuSelections[p.id].level = e.target.value;
+          }
+        });
+      }
+
+      const notesInp = el.querySelector('.rsv-notes-input');
+      if (notesInp) {
+        notesInp.addEventListener('input', (e) => {
+          if (kMenuSelections[p.id]) {
+            kMenuSelections[p.id].notes = e.target.value;
+          }
+        });
+      }
 
       kRsvMenuList.appendChild(el);
     });
@@ -1808,6 +2105,81 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function updatePosCashCalculator(payable) {
+    if (!kPosCashCalcBox) return;
+    const selectedPay = document.querySelector('input[name="kRsvPayMethod"]:checked')?.value || 'Cash (Kasir)';
+    const isCash = selectedPay.includes('Cash') || selectedPay.includes('Tunai');
+
+    if (!isCash) {
+      kPosCashCalcBox.style.display = 'none';
+      return;
+    }
+    kPosCashCalcBox.style.display = 'block';
+
+    if (kPosQuickCashPills && payable > 0) {
+      const pillAmounts = [
+        { label: 'Uang Pas', val: payable },
+        { label: '20k', val: 20000 },
+        { label: '50k', val: 50000 },
+        { label: '100k', val: 100000 },
+        { label: '200k', val: 200000 }
+      ].filter(p => p.val >= payable || p.label === 'Uang Pas');
+
+      kPosQuickCashPills.innerHTML = pillAmounts.map(p => `
+        <button type="button" class="quick-cash-pill" data-amount="${p.val}">${p.label} (${formatRp(p.val)})</button>
+      `).join('');
+
+      kPosQuickCashPills.querySelectorAll('.quick-cash-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const amt = Number(btn.getAttribute('data-amount')) || 0;
+          if (kPosCashGiven) kPosCashGiven.value = amt;
+          calculatePosCashChange(payable);
+        });
+      });
+    }
+
+    calculatePosCashChange(payable);
+  }
+
+  function calculatePosCashChange(payable) {
+    if (!kPosCashGiven || !kPosChangeAmount || !kPosChangeStatusMsg) return;
+    const given = Number(kPosCashGiven.value) || 0;
+
+    if (given <= 0) {
+      kPosChangeAmount.textContent = 'Rp 0';
+      kPosChangeAmount.style.color = '#1e293b';
+      kPosChangeStatusMsg.textContent = 'Masukkan jumlah uang tunai dari pelanggan.';
+      kPosChangeStatusMsg.style.color = '#64748b';
+      return;
+    }
+
+    const diff = given - payable;
+    if (diff >= 0) {
+      kPosChangeAmount.textContent = formatRp(diff);
+      kPosChangeAmount.style.color = '#16a34a';
+      kPosChangeStatusMsg.textContent = diff === 0 ? '✓ Uang Pas' : `✓ Kembalian ${formatRp(diff)}`;
+      kPosChangeStatusMsg.style.color = '#16a34a';
+    } else {
+      kPosChangeAmount.textContent = 'Rp 0';
+      kPosChangeAmount.style.color = '#dc2626';
+      kPosChangeStatusMsg.textContent = `Uang tunai kurang ${formatRp(Math.abs(diff))}`;
+      kPosChangeStatusMsg.style.color = '#dc2626';
+    }
+  }
+
+  if (kPosCashGiven) {
+    kPosCashGiven.addEventListener('input', () => {
+      const payable = parseInt((kRsvPayableNow.textContent || '0').replace(/[^0-9]/g, '')) || 0;
+      calculatePosCashChange(payable);
+    });
+  }
+
+  document.querySelectorAll('input[name="kRsvPayMethod"]').forEach(r => {
+    r.addEventListener('change', () => {
+      updateKasirRsvCalculations();
+    });
+  });
+
   function updateKasirRsvCalculations() {
     const seats = Math.max(1, parseInt(kRsvSeatsCount.value) || 1);
     const minSpend = seats * 15000;
@@ -1818,10 +2190,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let subtotal = 0;
     Object.keys(kMenuSelections).forEach(id => {
       const p = prods.find(pr => pr.id === id);
-      if (p) subtotal += p.price * kMenuSelections[id];
+      const sel = kMenuSelections[id];
+      const qty = typeof sel === 'object' ? (sel.qty || 0) : Number(sel);
+      if (p && qty > 0) subtotal += p.price * qty;
     });
 
+    const tax = Math.round(subtotal * 0.1);
+    const grandTotal = subtotal + tax;
+
     if (kRsvCurrentMenuTotal) kRsvCurrentMenuTotal.textContent = formatRp(subtotal);
+    if (kPosSubtotalText) kPosSubtotalText.textContent = formatRp(subtotal);
+    if (kPosTaxText) kPosTaxText.textContent = formatRp(tax);
+    if (kPosGrandTotalText) kPosGrandTotalText.textContent = formatRp(grandTotal);
 
     if (kSpendAlertMsg) {
       if (subtotal >= minSpend) {
@@ -1833,31 +2213,137 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const tax = Math.round(subtotal * 0.1);
-    const grandTotal = subtotal + tax;
     const dp50 = Math.round(grandTotal * 0.5);
-
     if (kRsvDp50Amount) kRsvDp50Amount.textContent = formatRp(dp50);
     if (kRsvDp50Remain) kRsvDp50Remain.textContent = formatRp(grandTotal - dp50);
     if (kRsvDp100Amount) kRsvDp100Amount.textContent = formatRp(grandTotal);
 
     const isDp50 = document.querySelector('input[name="kRsvDpOption"]:checked')?.value === '50';
-    const payable = isDp50 ? dp50 : grandTotal;
+    const payable = (kCurrentOrderMode === 'DINE_IN') ? grandTotal : (isDp50 ? dp50 : grandTotal);
     if (kRsvPayableNow) kRsvPayableNow.textContent = formatRp(payable);
+
+    updatePosCashCalculator(payable);
   }
 
   if (kasirRsvForm) {
     kasirRsvForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const customerName = kRsvCustomerName.value.trim();
-      const phone = kRsvPhone.value.trim();
-      const eventDate = kRsvDate.value;
-      const eventTime = kRsvTime.value;
+      const customerName = (kRsvCustomerName ? kRsvCustomerName.value.trim() : '');
+      const phone = (kRsvPhone ? kRsvPhone.value.trim() : '');
       const seats = parseInt(kRsvSeatsCount.value) || 1;
+
       if (kSelectedTables.length === 0) {
         alert('Silakan pilih minimal 1 meja!');
         return;
       }
+
+      // Collect items
+      const prods = getProducts();
+      let subtotal = 0;
+      const items = [];
+      Object.keys(kMenuSelections).forEach(id => {
+        const p = prods.find(pr => pr.id === id);
+        const sel = kMenuSelections[id];
+        const qty = typeof sel === 'object' ? (sel.qty || 0) : Number(sel);
+        if (p && qty > 0) {
+          const t = p.price * qty;
+          subtotal += t;
+          items.push({
+            id: p.id,
+            title: p.title,
+            price: p.price,
+            unitPrice: p.price,
+            qty: qty,
+            level: (sel && sel.level) ? sel.level : null,
+            notes: (sel && sel.notes) ? sel.notes : '',
+            total: t
+          });
+        }
+      });
+
+      if (items.length === 0) {
+        alert('Pilih minimal 1 menu makanan atau minuman!');
+        return;
+      }
+
+      const tax = Math.round(subtotal * 0.1);
+      const grandTotal = subtotal + tax;
+      const payMethod = document.querySelector('input[name="kRsvPayMethod"]:checked')?.value || 'Cash (Kasir)';
+      const isCash = payMethod.includes('Cash') || payMethod.includes('Tunai');
+
+      // -------------------------------------------------------------
+      // CASE A: DINE-IN WALK IN (Makan di Tempat Sekarang)
+      // -------------------------------------------------------------
+      if (kCurrentOrderMode === 'DINE_IN') {
+        let cashGiven = isCash ? (Number(kPosCashGiven.value) || 0) : grandTotal;
+        if (isCash && cashGiven < grandTotal) {
+          alert(`Uang tunai diterima (${formatRp(cashGiven)}) masih kurang dari total tagihan (${formatRp(grandTotal)})!`);
+          if (kPosCashGiven) kPosCashGiven.focus();
+          return;
+        }
+
+        const cashChange = isCash ? Math.max(0, cashGiven - grandTotal) : 0;
+        const orderId = 'ORD-' + Date.now();
+        const orders = getOrders();
+        const now = new Date();
+        const todayOrders = orders.filter(o => isSameDay(parseOrderDate(o), now) && o.diningType !== 'RESERVASI');
+        const nextQueueNo = 'A-' + String(todayOrders.length + 1).padStart(3, '0');
+        const timeStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        const newOrder = {
+          orderId: orderId,
+          queueNumber: nextQueueNo,
+          customerName: customerName || `Tamu ${kSelectedTables.join(', ')}`,
+          phone: phone || '-',
+          tableInfo: kSelectedTables.join(', '),
+          tableNumbers: kSelectedTables,
+          diningType: 'Dine In',
+          seats: seats,
+          paymentMethod: isCash ? 'Cash (Lunas di Kasir)' : 'QRIS (Kasir)',
+          items: items,
+          subtotal: subtotal,
+          tax: tax,
+          grandTotal: grandTotal,
+          cashPaid: cashGiven,
+          cashChange: cashChange,
+          status: 'LUNAS',
+          createdAt: timeStr,
+          timestamp: Date.now()
+        };
+
+        orders.push(newOrder);
+        saveOrders(orders);
+
+        if (window.GacoanSupabase && window.GacoanSupabase.isAvailable()) {
+          window.GacoanSupabase.insertOrder(newOrder);
+        }
+
+        playSuccessChime();
+        modalKasirNewReservation.classList.remove('active');
+        renderLiveTableMap();
+        renderDashboard();
+
+        // Print receipt immediately
+        openReceiptModal(newOrder);
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // CASE B: RESERVATION BOOKING (Jadwal Acara)
+      // -------------------------------------------------------------
+      const eventDate = kRsvDate ? kRsvDate.value : '';
+      const eventTime = kRsvTime ? kRsvTime.value : '';
+      if (!eventDate || !eventTime) {
+        alert('Mohon lengkapi tanggal dan jam kedatangan reservasi!');
+        return;
+      }
+
+      if (!phone) {
+        alert('Mohon isi nomor WhatsApp pemesan untuk konfirmasi reservasi!');
+        if (kRsvPhone) kRsvPhone.focus();
+        return;
+      }
+
       const bookedOnDate = getKasirBookedTablesForDate(eventDate);
       const conflictTables = kSelectedTables.filter(t => bookedOnDate.has(t));
       if (conflictTables.length > 0) {
@@ -1867,36 +2353,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const minSpend = seats * 15000;
-
-      const prods = getProducts();
-      let subtotal = 0;
-      const items = [];
-      Object.keys(kMenuSelections).forEach(id => {
-        const p = prods.find(pr => pr.id === id);
-        if (p && kMenuSelections[id] > 0) {
-          const t = p.price * kMenuSelections[id];
-          subtotal += t;
-          items.push({ id: p.id, title: p.title, price: p.price, qty: kMenuSelections[id], total: t });
-        }
-      });
-
       if (subtotal < minSpend) {
         alert(`Minimal belanja belum terpenuhi (${formatRp(minSpend)}). Silakan tambah menu.`);
         return;
       }
 
-      const tax = Math.round(subtotal * 0.1);
-      const grandTotal = subtotal + tax;
       const isDp50 = document.querySelector('input[name="kRsvDpOption"]:checked')?.value === '50';
       const dpAmount = isDp50 ? Math.round(grandTotal * 0.5) : grandTotal;
-      const payMethod = document.querySelector('input[name="kRsvPayMethod"]:checked')?.value || 'Cash (Kasir)';
       const rsvId = 'RSV-' + Date.now();
 
       const newRsv = {
         reservationId: rsvId,
         orderId: rsvId,
         queueNumber: 'RSV-' + rsvId.slice(-4),
-        customerName: customerName,
+        customerName: customerName || 'Tamu Reservasi',
         phone: phone,
         eventDate: eventDate,
         eventTime: eventTime,
@@ -1913,7 +2383,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dpOption: isDp50 ? '50%' : '100%',
         remainingBalance: isDp50 ? (grandTotal - dpAmount) : 0,
         status: isDp50 ? 'DP_LUNAS' : 'LUNAS',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        timestamp: Date.now()
       };
 
       const orders = getOrders();
@@ -1924,6 +2395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.GacoanSupabase.insertReservation(newRsv);
       }
 
+      playSuccessChime();
       modalKasirNewReservation.classList.remove('active');
       renderKasirReservations();
       renderLiveTableMap();

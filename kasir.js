@@ -806,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnScopeToday = document.getElementById('btnScopeToday');
   const btnScopeAll = document.getElementById('btnScopeAll');
+  const scopeDateInput = document.getElementById('scopeDateInput');
 
   const ordersGrid = document.getElementById('ordersGrid');
   const filterBtns = document.querySelectorAll('.filter-btn');
@@ -814,21 +815,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshFeed = document.getElementById('btnRefreshFeed');
   const btnClearOrdersDB = document.getElementById('btnClearOrdersDB');
 
-  let currentDateScope = 'TODAY'; // 'TODAY' (default: reset queue on new day) | 'ALL' (view all history)
+  let currentDateScope = 'TODAY'; // 'TODAY' | 'CUSTOM' | 'ALL'
+  let customSelectedDate = null; // Date object when custom date is picked
 
   if (btnScopeToday) {
     btnScopeToday.addEventListener('click', () => {
       currentDateScope = 'TODAY';
+      customSelectedDate = null;
       btnScopeToday.classList.add('active');
       if (btnScopeAll) btnScopeAll.classList.remove('active');
+      if (scopeDateInput) {
+        scopeDateInput.classList.remove('active');
+        scopeDateInput.value = '';
+      }
       renderDashboard();
     });
   }
+
+  if (scopeDateInput) {
+    scopeDateInput.addEventListener('change', (e) => {
+      if (e.target.value) {
+        const [y, m, d] = e.target.value.split('-').map(Number);
+        customSelectedDate = new Date(y, m - 1, d);
+        currentDateScope = 'CUSTOM';
+        if (btnScopeToday) btnScopeToday.classList.remove('active');
+        if (btnScopeAll) btnScopeAll.classList.remove('active');
+        scopeDateInput.classList.add('active');
+        renderDashboard();
+      }
+    });
+  }
+
   if (btnScopeAll) {
     btnScopeAll.addEventListener('click', () => {
       currentDateScope = 'ALL';
+      customSelectedDate = null;
       btnScopeAll.classList.add('active');
       if (btnScopeToday) btnScopeToday.classList.remove('active');
+      if (scopeDateInput) {
+        scopeDateInput.classList.remove('active');
+        scopeDateInput.value = '';
+      }
       renderDashboard();
     });
   }
@@ -849,16 +876,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const orders = getOrders();
     const now = new Date();
 
-    // 1. Calculate KPI Statistics for TODAY (Omset Harian)
-    // Only orders from today (since 00:00) count for Omset Hari Ini
-    // When 00:00 midnight arrives, this resets to 0 automatically
-    const todayOrders = orders.filter(o => isSameDay(parseOrderDate(o), now));
+    // Determine orders according to active date scope
+    let baseList = [];
+    let kpiOrders = [];
+    let dateLabel = 'Hari Ini';
 
-    const totalCount = todayOrders.length;
-    const pendingCount = todayOrders.filter(o => o.status === 'MENUNGGU_BAYAR').length;
-    const paidCount = todayOrders.filter(o => o.status === 'LUNAS' || o.status === 'SEDANG_DIMASAK' || o.status === 'SIAP_SAJI' || o.status === 'SELESAI' || o.status === 'DP_LUNAS' || o.status === 'CHECK-IN' || o.status === 'DIPROSES').length;
-    const doneCount = todayOrders.filter(o => o.status === 'SELESAI').length;
-    const totalRevenue = todayOrders
+    if (currentDateScope === 'TODAY') {
+      kpiOrders = orders.filter(o => isSameDay(parseOrderDate(o), now));
+      baseList = kpiOrders;
+      dateLabel = 'Hari Ini';
+    } else if (currentDateScope === 'CUSTOM' && customSelectedDate) {
+      kpiOrders = orders.filter(o => isSameDay(parseOrderDate(o), customSelectedDate));
+      baseList = kpiOrders;
+      dateLabel = customSelectedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    } else {
+      // ALL
+      kpiOrders = orders;
+      baseList = orders;
+      dateLabel = 'Seluruh Riwayat';
+    }
+
+    // 1. Calculate KPI Statistics
+    const totalCount = kpiOrders.length;
+    const pendingCount = kpiOrders.filter(o => o.status === 'MENUNGGU_BAYAR').length;
+    const paidCount = kpiOrders.filter(o => o.status === 'LUNAS' || o.status === 'SEDANG_DIMASAK' || o.status === 'SIAP_SAJI' || o.status === 'SELESAI' || o.status === 'DP_LUNAS' || o.status === 'CHECK-IN' || o.status === 'DIPROSES').length;
+    const doneCount = kpiOrders.filter(o => o.status === 'SELESAI').length;
+    const totalRevenue = kpiOrders
       .filter(o => o.status === 'LUNAS' || o.status === 'SEDANG_DIMASAK' || o.status === 'SIAP_SAJI' || o.status === 'SELESAI' || o.status === 'DP_LUNAS' || o.status === 'CHECK-IN' || o.status === 'DIPROSES')
       .reduce((sum, o) => {
         if (o.status === 'DP_LUNAS' && o.dpPaid) return sum + Number(o.dpPaid || 0);
@@ -870,8 +913,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statPaidOrders) statPaidOrders.textContent = paidCount;
     if (statTotalRevenue) statTotalRevenue.textContent = formatRp(totalRevenue);
 
-    // 2. Base list for active queue depends on Date Scope (Default: TODAY)
-    const baseList = (currentDateScope === 'TODAY') ? todayOrders : orders;
+    // Update KPI Card Title Labels dynamically
+    const statTitleOrders = document.querySelector('.kasir-stats-grid .stat-card:nth-child(1) .stat-title');
+    const statTitleRev = document.querySelector('.kasir-stats-grid .stat-card:nth-child(4) .stat-title');
+    if (statTitleOrders) statTitleOrders.textContent = currentDateScope === 'TODAY' ? 'Total Pesanan Hari Ini' : `Total Pesanan (${dateLabel})`;
+    if (statTitleRev) statTitleRev.textContent = currentDateScope === 'TODAY' ? 'Total Omset Hari Ini' : `Total Omset (${dateLabel})`;
 
     // Filter pill counters match the active scope
     const scopeTotal = baseList.length;
@@ -908,10 +954,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Render Cards
     if (filtered.length === 0) {
-      const emptyTitle = currentDateScope === 'TODAY' ? 'Belum ada antrian pesanan hari ini' : 'Tidak ada pesanan yang cocok';
-      const emptyDesc = currentDateScope === 'TODAY'
-        ? 'Pesanan hari ini akan otomatis muncul di sini. Riwayat pesanan kemarin tersimpan aman 100% di menu Data Penjualan.'
-        : 'Silakan gunakan tombol filter atau cari nomor antrian lain.';
+      let emptyTitle = 'Belum ada antrian pesanan';
+      let emptyDesc = 'Pesanan akan otomatis muncul di sini saat pelanggan melakukan pemesanan.';
+      if (currentDateScope === 'TODAY') {
+        emptyTitle = 'Belum ada antrian pesanan hari ini';
+        emptyDesc = 'Pesanan hari ini akan otomatis muncul di sini. Anda juga bisa memilih tanggal lain lewat pemilih tanggal.';
+      } else if (currentDateScope === 'CUSTOM') {
+        emptyTitle = `Belum ada pesanan pada tanggal ${dateLabel}`;
+        emptyDesc = 'Tidak ditemukan antrian pada tanggal ini. Riwayat penjualan lengkap tersimpan di menu Data Penjualan.';
+      } else {
+        emptyTitle = 'Tidak ada pesanan yang cocok';
+        emptyDesc = 'Silakan gunakan tombol filter atau cari nomor antrian lain.';
+      }
 
       ordersGrid.innerHTML = `
         <div class="orders-empty-state">
@@ -1216,10 +1270,66 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // LIVE TABLE MAP (DENAH MEJA) MODULE
   // ==========================================================================
+  const btnTableToday = document.getElementById('btnTableToday');
+  const tableDateInput = document.getElementById('tableDateInput');
+  const btnTableAll = document.getElementById('btnTableAll');
+
+  let currentTableDateScope = 'TODAY'; // 'TODAY' | 'CUSTOM' | 'ALL'
+  let customTableSelectedDate = null;
+
+  if (btnTableToday) {
+    btnTableToday.addEventListener('click', () => {
+      currentTableDateScope = 'TODAY';
+      customTableSelectedDate = null;
+      btnTableToday.classList.add('active');
+      if (btnTableAll) btnTableAll.classList.remove('active');
+      if (tableDateInput) {
+        tableDateInput.classList.remove('active');
+        tableDateInput.value = '';
+      }
+      renderLiveTableMap();
+    });
+  }
+
+  if (tableDateInput) {
+    tableDateInput.addEventListener('change', (e) => {
+      if (e.target.value) {
+        const [y, m, d] = e.target.value.split('-').map(Number);
+        customTableSelectedDate = new Date(y, m - 1, d);
+        currentTableDateScope = 'CUSTOM';
+        if (btnTableToday) btnTableToday.classList.remove('active');
+        if (btnTableAll) btnTableAll.classList.remove('active');
+        tableDateInput.classList.add('active');
+        renderLiveTableMap();
+      }
+    });
+  }
+
+  if (btnTableAll) {
+    btnTableAll.addEventListener('click', () => {
+      currentTableDateScope = 'ALL';
+      customTableSelectedDate = null;
+      btnTableAll.classList.add('active');
+      if (btnTableToday) btnTableToday.classList.remove('active');
+      if (tableDateInput) {
+        tableDateInput.classList.remove('active');
+        tableDateInput.value = '';
+      }
+      renderLiveTableMap();
+    });
+  }
+
   function renderLiveTableMap() {
     if (!kasirLiveTablesGrid) return;
     const orders = getOrders();
+    const now = new Date();
     kasirLiveTablesGrid.innerHTML = '';
+
+    const targetDate = (currentTableDateScope === 'CUSTOM' && customTableSelectedDate)
+      ? customTableSelectedDate
+      : (currentTableDateScope === 'TODAY' ? now : null);
+
+    const targetDateStr = targetDate ? targetDate.toISOString().split('T')[0] : null;
 
     for (let i = 1; i <= 12; i++) {
       const tableNo = `Meja ${String(i).padStart(2, '0')}`;
@@ -1228,14 +1338,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const activeOrder = orders.find(o => {
         const isTableMatch = o.tableInfo && (o.tableInfo.includes(tableNo) || (Array.isArray(o.tableNumbers) && o.tableNumbers.includes(tableNo)));
         const isActiveStatus = ['MENUNGGU_BAYAR', 'SEDANG_DIMASAK', 'DIPROSES', 'LUNAS'].includes(o.status);
-        return isTableMatch && isActiveStatus;
+        if (!isTableMatch || !isActiveStatus) return false;
+        if (currentTableDateScope === 'ALL') return true;
+        return isSameDay(parseOrderDate(o), targetDate);
       });
 
       // Find upcoming reservation for this table
       const upcomingRsv = orders.find(o => {
-        const isRsv = o.diningType === 'RESERVASI' && o.status === 'DP_LUNAS';
+        const isRsv = o.diningType === 'RESERVASI' && (o.status === 'DP_LUNAS' || o.status === 'CHECK-IN' || o.status === 'LUNAS');
         const isTableMatch = o.tableInfo && (o.tableInfo.includes(tableNo) || (Array.isArray(o.tableNumbers) && o.tableNumbers.includes(tableNo)));
-        return isRsv && isTableMatch;
+        if (!isRsv || !isTableMatch) return false;
+        if (currentTableDateScope === 'ALL') return true;
+        const matchesEventDate = o.eventDate && (o.eventDate === targetDateStr || isSameDay(new Date(o.eventDate), targetDate));
+        const matchesCreatedDate = isSameDay(parseOrderDate(o), targetDate);
+        return matchesEventDate || matchesCreatedDate;
       });
 
       let statusType = 'available';
@@ -1349,6 +1465,55 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // RESERVATIONS MANAGEMENT MODULE
   // ==========================================================================
+  const btnRsvDateAll = document.getElementById('btnRsvDateAll');
+  const btnRsvDateToday = document.getElementById('btnRsvDateToday');
+  const rsvDateInput = document.getElementById('rsvDateInput');
+
+  let currentRsvDateScope = 'ALL'; // 'ALL' | 'TODAY' | 'CUSTOM'
+  let customRsvSelectedDate = null;
+
+  if (btnRsvDateAll) {
+    btnRsvDateAll.addEventListener('click', () => {
+      currentRsvDateScope = 'ALL';
+      customRsvSelectedDate = null;
+      btnRsvDateAll.classList.add('active');
+      if (btnRsvDateToday) btnRsvDateToday.classList.remove('active');
+      if (rsvDateInput) {
+        rsvDateInput.classList.remove('active');
+        rsvDateInput.value = '';
+      }
+      renderKasirReservations();
+    });
+  }
+
+  if (btnRsvDateToday) {
+    btnRsvDateToday.addEventListener('click', () => {
+      currentRsvDateScope = 'TODAY';
+      customRsvSelectedDate = null;
+      btnRsvDateToday.classList.add('active');
+      if (btnRsvDateAll) btnRsvDateAll.classList.remove('active');
+      if (rsvDateInput) {
+        rsvDateInput.classList.remove('active');
+        rsvDateInput.value = '';
+      }
+      renderKasirReservations();
+    });
+  }
+
+  if (rsvDateInput) {
+    rsvDateInput.addEventListener('change', (e) => {
+      if (e.target.value) {
+        const [y, m, d] = e.target.value.split('-').map(Number);
+        customRsvSelectedDate = new Date(y, m - 1, d);
+        currentRsvDateScope = 'CUSTOM';
+        if (btnRsvDateAll) btnRsvDateAll.classList.remove('active');
+        if (btnRsvDateToday) btnRsvDateToday.classList.remove('active');
+        rsvDateInput.classList.add('active');
+        renderKasirReservations();
+      }
+    });
+  }
+
   function renderKasirReservations() {
     if (!kasirReservationsList) return;
     const orders = getOrders();
@@ -1359,6 +1524,15 @@ document.addEventListener('DOMContentLoaded', () => {
       filtered = rsvList.filter(r => r.status === 'DP_LUNAS');
     } else if (rsvFilter === 'SETTLED') {
       filtered = rsvList.filter(r => r.status === 'LUNAS' || r.status === 'SELESAI');
+    }
+
+    if (currentRsvDateScope === 'TODAY') {
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      filtered = filtered.filter(r => (r.eventDate && (r.eventDate === todayStr || isSameDay(new Date(r.eventDate), now))) || isSameDay(parseOrderDate(r), now));
+    } else if (currentRsvDateScope === 'CUSTOM' && customRsvSelectedDate) {
+      const customStr = customRsvSelectedDate.toISOString().split('T')[0];
+      filtered = filtered.filter(r => (r.eventDate && (r.eventDate === customStr || isSameDay(new Date(r.eventDate), customRsvSelectedDate))) || isSameDay(parseOrderDate(r), customRsvSelectedDate));
     }
 
     if (filtered.length === 0) {

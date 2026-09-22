@@ -234,7 +234,7 @@
           </div>
 
           <div class="orders-actions-right">
-            <!-- Date Scope Toggle: Hari Ini (Default) vs Semua Riwayat -->
+            <!-- Date Scope Toggle: Hari Ini (Default) vs Pilih Tanggal vs Semua Riwayat -->
             <div class="date-scope-toggle" id="dateScopeToggle">
               <button type="button" class="scope-btn active" data-scope="TODAY" id="btnScopeToday" title="Hanya tampilkan pesanan operasional hari ini">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:4px;">
@@ -243,6 +243,9 @@
                 </svg>
                 <span>Hari Ini</span>
               </button>
+              <div class="scope-date-picker-wrap" title="Pilih tanggal spesifik">
+                <input type="date" id="scopeDateInput" class="scope-date-input" title="Pilih tanggal tertentu" />
+              </div>
               <button type="button" class="scope-btn" data-scope="ALL" id="btnScopeAll" title="Tampilkan seluruh riwayat pesanan (termasuk hari-hari sebelumnya)">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:4px;">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -278,10 +281,27 @@
             <h2>Denah & Status Meja Resto (Real-Time)</h2>
             <p>Pantau okupansi meja (Meja 01 s/d Meja 12) secara live, durasi makan tamu, dan status reservasi.</p>
           </div>
-          <div class="tables-legend">
-            <span class="legend-item"><span class="legend-dot green"></span> Kosong / Tersedia</span>
-            <span class="legend-item"><span class="legend-dot red"></span> Sedang Terisi (Makan)</span>
-            <span class="legend-item"><span class="legend-dot yellow"></span> Dibooking (Reservasi)</span>
+          <div class="tables-header-actions">
+            <div class="date-scope-toggle" id="tableDateScopeToggle">
+              <button type="button" class="scope-btn active" id="btnTableToday" title="Lihat status meja hari ini">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:3px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Hari Ini</span>
+              </button>
+              <div class="scope-date-picker-wrap" title="Pilih tanggal okupansi & reservasi meja">
+                <input type="date" id="tableDateInput" class="scope-date-input" title="Pilih tanggal pantauan meja" />
+              </div>
+              <button type="button" class="scope-btn" id="btnTableAll" title="Tampilkan seluruh jadwal & reservasi">
+                <span>Semua Jadwal</span>
+              </button>
+            </div>
+            <div class="tables-legend">
+              <span class="legend-item"><span class="legend-dot green"></span> Kosong / Tersedia</span>
+              <span class="legend-item"><span class="legend-dot red"></span> Sedang Terisi (Makan)</span>
+              <span class="legend-item"><span class="legend-dot yellow"></span> Dibooking (Reservasi)</span>
+            </div>
           </div>
         </div>
 
@@ -310,6 +330,14 @@
           <button type="button" class="rsv-filter-pill active" data-rsv-filter="ALL">Semua Reservasi</button>
           <button type="button" class="rsv-filter-pill" data-rsv-filter="UPCOMING">Mendatang / DP Lunas</button>
           <button type="button" class="rsv-filter-pill" data-rsv-filter="SETTLED">Lunas / Selesai</button>
+
+          <div class="date-scope-toggle rsv-date-scope" id="rsvDateScopeToggle" style="margin-left: auto;">
+            <button type="button" class="scope-btn active" id="btnRsvDateAll">Semua Tanggal</button>
+            <button type="button" class="scope-btn" id="btnRsvDateToday">Hari Ini</button>
+            <div class="scope-date-picker-wrap" title="Filter tanggal acara reservasi">
+              <input type="date" id="rsvDateInput" class="scope-date-input" title="Pilih tanggal reservasi" />
+            </div>
+          </div>
         </div>
 
         <div class="rsv-cards-container" id="kasirReservationsList">
